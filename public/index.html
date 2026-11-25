@@ -18,6 +18,7 @@
 --ok:light-dark(#1d7a46,#5fd08f);--warn:light-dark(#a3470f,#f0a06a);--bad:light-dark(#b3261e,#ff8a80)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
 h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.1;margin:0;text-wrap:balance}
 h1{font-size:clamp(20px,3vw,26px);font-weight:800}h2{font-size:clamp(24px,3.4vw,34px);font-weight:800}h3{font-size:18px;font-weight:600}
@@ -133,6 +134,22 @@ const frDate=s=>s?s.split('-').reverse().join('/'):'';
 const longDate=s=>{const d=parse(s);return JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()].toLowerCase()+' '+d.getFullYear()};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const pct=(a,b)=>b?(a/b*100).toFixed(1).replace('.',',')+' %':'0,0 %';
+const num=v=>{const n=Number(String(v??'').replace(/[^\d.-]/g,''));return isFinite(n)?n:0};
+const fcfa=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' F';
+const payTotal=e=>e.pec==='PAF'?num(e.montant):num(e.partEmp)+num(e.partPat);
+const payLabel=e=>!e.pec?'':e.pec==='PAF'?(e.montant!==''&&e.montant!=null?fcfa(num(e.montant)):''):((e.partEmp||e.partPat)?'Empl. '+fcfa(num(e.partEmp))+' / Pat. '+fcfa(num(e.partPat)):'');
+function pecFields(o){const pec=o.pec,f=(n,l)=>`<label>${l}<input name="${n}" type="number" min="0" step="1" inputmode="numeric" value="${esc(o[n]??'')}" placeholder="0"></label>`;
+  return !pec?'':pec==='PAF'?f('montant','Montant payé (FCFA)'):f('partEmp','Part employeur (FCFA)')+f('partPat','Part patient (FCFA)')}
+function cleanPay(o){if(o.pec!=='PAF')delete o.montant;if(!o.pec||o.pec==='PAF'){delete o.partEmp;delete o.partPat}return o}
+function bindPec(form,o){const sel=form.querySelector('select[name=pec]'),box=form.querySelector('.pecF');
+  sel.addEventListener('change',()=>{for(const i of box.querySelectorAll('input'))o[i.name]=i.value;o.pec=sel.value;box.innerHTML=pecFields(o)})}
+function finance(L){
+  const rows=PEC.map(p=>{const l=L.filter(e=>e.pec===p);return p==='PAF'?[p,l.length,fcfa(l.reduce((t,e)=>t+num(e.montant),0)),'—','—',fcfa(l.reduce((t,e)=>t+payTotal(e),0))]
+    :[p,l.length,'—',fcfa(l.reduce((t,e)=>t+num(e.partEmp),0)),fcfa(l.reduce((t,e)=>t+num(e.partPat),0)),fcfa(l.reduce((t,e)=>t+payTotal(e),0))]});
+  const P=L.filter(e=>PEC.includes(e.pec));
+  return{h:'Recettes par prise en charge',head:['Prise en charge','Actes','Montant PAF','Part employeur','Part patient','Total'],body:rows,
+    foot:['TOTAL',P.length,fcfa(P.reduce((t,e)=>t+(e.pec==='PAF'?num(e.montant):0),0)),fcfa(P.reduce((t,e)=>t+(e.pec!=='PAF'?num(e.partEmp):0),0)),fcfa(P.reduce((t,e)=>t+(e.pec!=='PAF'?num(e.partPat):0),0)),fcfa(P.reduce((t,e)=>t+payTotal(e),0))]};
+}
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)};
 const opt=(list,val,empty)=>(empty!=null?`<option value="">${esc(empty)}</option>`:'')+list.map(v=>{const[k,l]=Array.isArray(v)?v:[v,v];return `<option value="${esc(k)}"${String(k)===String(val??'')?' selected':''}>${esc(l)}</option>`}).join('');
 
@@ -252,10 +269,10 @@ function repMensuel(y,m){
   if(L.some(e=>!ACTES.includes(e.acte)))body.push(line('Autre',e=>!ACTES.includes(e.acte)));
   const R=S.rdvs.filter(r=>inMonth(r,y,m));
   return{title:'Activités exploration fonctionnelle – '+MOIS[m]+' '+y,sub:'Du 01/'+pad(m+1)+'/'+y+' au '+last+'/'+pad(m+1)+'/'+y,file:'Rapport_mensuel_'+y+'-'+pad(m+1),
-    sections:[{h:'Actes par prise en charge',head,body,foot:line('TOTAL',()=>true)},
+    sections:[{h:'Actes par prise en charge',head,body,foot:line('TOTAL',()=>true)},finance(L),
       {h:'Rendez-vous du mois',head:['Statut','Effectif','%'],body:Object.entries(STATUTS).map(([k,[l]])=>[l,count(R,r=>(r.statut||'prevu')===k),pct(count(R,r=>(r.statut||'prevu')===k),R.length)]),foot:['Total',R.length,R.length?'100,0 %':'0,0 %']},
-      {h:'Registre du mois',head:['N°','Date','Prénom et nom','Sexe','Âge','Prov.','Prise en charge','Acte','Diagnostic','CR'],wide:true,
-       body:numbered().filter(e=>inMonth(e,y,m)).sort((a,b)=>a._n-b._n).map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.pec||'',e.acte||'',e.diag||'',(e.pieces||[]).length?(e.pieces.length+' pièce(s)'):(e.cr?'texte':'—')])}]};
+      {h:'Registre du mois',head:['N°','Date','Prénom et nom','Sexe','Âge','Prov.','Prise en charge','Montant','Acte','Diagnostic','CR'],wide:true,
+       body:numbered().filter(e=>inMonth(e,y,m)).sort((a,b)=>a._n-b._n).map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.pec||'',payLabel(e),e.acte||'',e.diag||'',(e.pieces||[]).length?(e.pieces.length+' pièce(s)'):(e.cr?'texte':'—')])}]};
 }
 function repAnnuel(y){
   const head=['Mois',...ACTES,'TOTAL','EXT','INT',...PEC];
@@ -271,6 +288,7 @@ function repSynthese(a,b){
     sections:[{h:'Total général',head:['Indicateur','Effectif'],body:[['Total patients enregistrés',n],['Rendez-vous pris',R.length],['Rendez-vous honorés',hon],['Absences',abs],['Taux de présence',(hon+abs)?pct(hon,hon+abs):'—'],['Comptes rendus archivés',count(L,e=>(e.pieces||[]).length||e.cr)]]},
       blk('Par sexe',[['Hommes',e=>e.sexe==='H'],['Femmes',e=>e.sexe==='F'],['Non renseigné',e=>!['H','F'].includes(e.sexe)]]),
       blk('Externes / Internes',[['Externes (Ext)',e=>e.prov==='Ext'],['Internes (Int)',e=>e.prov==='Int'],['Non renseigné',e=>!['Ext','Int'].includes(e.prov)]]),
+      finance(L),
       blk('PAF / Autres',[...PEC.map(p=>[p,e=>e.pec===p]),['Non renseigné',e=>!PEC.includes(e.pec)]]),
       blk("Par type d'acte",[...ACTES.map(x=>[x,e=>e.acte===x]),['Autre',e=>!ACTES.includes(e.acte)]])]};
 }
@@ -292,7 +310,7 @@ function repPDF(r){
     doc.text(s.h,14,y+4);
     doc.autoTable({startY:y+6,head:[s.head],body:s.body.map(r=>r.map(String)),foot:s.foot?[s.foot.map(String)]:undefined,theme:'grid',
       styles:{fontSize:8.5,cellPadding:1.6},headStyles:{fillColor:[15,76,92]},footStyles:{fillColor:[246,232,90],textColor:20},
-      columnStyles:s.wide?{8:{cellWidth:60}}:{},didParseCell:d=>{if(!s.wide&&d.column.index>0)d.cell.styles.halign='right'}});
+      columnStyles:s.wide?{9:{cellWidth:55}}:{},didParseCell:d=>{if(!s.wide&&d.column.index>0)d.cell.styles.halign='right'}});
     y=doc.lastAutoTable.finalY+8;
   }
   const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(120);doc.text('Page '+i+' / '+n,doc.internal.pageSize.getWidth()-28,doc.internal.pageSize.getHeight()-8)}
@@ -313,7 +331,7 @@ async function fichePDF(e){
   doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Compte rendu – '+(e.acte||'Exploration fonctionnelle'),14,16);
   doc.setFont('helvetica','normal');doc.setFontSize(10);
   doc.autoTable({startY:22,theme:'plain',styles:{fontSize:10,cellPadding:1.2},columnStyles:{0:{fontStyle:'bold',cellWidth:42}},
-    body:[['Patient',e.nom||''],['Date',frDate(e.date)],['Sexe / âge',[e.sexe==='H'?'Homme':e.sexe==='F'?'Femme':'',e.age?e.age+' ans':''].filter(Boolean).join(', ')],['Provenance',[e.prov,e.service].filter(Boolean).join(' – ')],['Prise en charge',e.pec||''],['Indication / diagnostic',e.diag||''],['Observations',e.obs||''],['Compte rendu',e.cr||'']]});
+    body:[['Patient',e.nom||''],['Date',frDate(e.date)],['Sexe / âge',[e.sexe==='H'?'Homme':e.sexe==='F'?'Femme':'',e.age?e.age+' ans':''].filter(Boolean).join(', ')],['Provenance',[e.prov,e.service].filter(Boolean).join(' – ')],['Prise en charge',[e.pec,payLabel(e)].filter(Boolean).join(' – ')],['Indication / diagnostic',e.diag||''],['Observations',e.obs||''],['Compte rendu',e.cr||'']]});
   let y=doc.lastAutoTable.finalY+6;const W=doc.internal.pageSize.getWidth()-28,H=doc.internal.pageSize.getHeight();
   const others=[];
   for(const p of e.pieces||[]){
@@ -365,8 +383,8 @@ function vRegistre(){
   return `<div class="row"><h2>Registre des examens</h2><span class="sp"></span><button class="btn" data-a="regxlsx">Exporter Excel</button><button class="btn p" data-a="exam">+ Nouvel examen</button></div>
   <div class="grid" style="margin:16px 0"><label>Année<select id="fY">${opt(years(),f.y)}</select></label><label>Mois<select id="fM">${opt(MOIS.map((n,i)=>[i,n]),f.m,'Toute l’année')}</select></label><label>Acte<select id="fA">${opt(ACTES,f.acte,'Tous')}</select></label><label>Rechercher<input id="fQ" type="search" value="${esc(f.q)}" placeholder="Nom, diagnostic…"></label></div>
   <div class="note">${L.length} examen(s) · Hommes ${count(L,e=>e.sexe==='H')} · Femmes ${count(L,e=>e.sexe==='F')} · Externes ${count(L,e=>e.prov==='Ext')} · Internes ${count(L,e=>e.prov==='Int')}</div>
-  ${L.length?`<div class="scroll" style="margin-top:10px"><table class="stack"><thead><tr><th>N°</th><th>Date</th><th>Prénom et nom</th><th>Sexe/âge</th><th>Prov.</th><th>PAF / Autres</th><th>Acte</th><th>Diagnostic</th><th>CR</th></tr></thead><tbody>
-  ${L.map(e=>`<tr class="click" data-a="exam" data-id="${esc(e.id)}"><td>${e._n}</td><td style="white-space:nowrap">${esc(frDate(e.date))}</td><td><b>${esc(e.nom)}</b></td><td>${esc([e.sexe,e.age].filter(Boolean).join(' · '))}</td><td>${esc(e.prov||'')}</td><td>${esc(e.pec||'')}</td><td>${esc(e.acte||'')}</td><td>${esc(e.diag||'')}</td><td>${(e.pieces||[]).length?'📎 '+e.pieces.length:(e.cr?'texte':'')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Aucun examen pour ces filtres. Ajoutez le premier avec « Nouvel examen ».</div>'}`;
+  ${L.length?`<div class="scroll" style="margin-top:10px"><table class="stack"><thead><tr><th>N°</th><th>Date</th><th>Prénom et nom</th><th>Sexe/âge</th><th>Prov.</th><th>PAF / Autres</th><th>Montant</th><th>Acte</th><th>Diagnostic</th><th>CR</th></tr></thead><tbody>
+  ${L.map(e=>`<tr class="click" data-a="exam" data-id="${esc(e.id)}"><td>${e._n}</td><td style="white-space:nowrap">${esc(frDate(e.date))}</td><td><b>${esc(e.nom)}</b></td><td>${esc([e.sexe,e.age].filter(Boolean).join(' · '))}</td><td>${esc(e.prov||'')}</td><td>${esc(e.pec||'')}</td><td style="white-space:nowrap">${esc(payLabel(e))}</td><td>${esc(e.acte||'')}</td><td>${esc(e.diag||'')}</td><td>${(e.pieces||[]).length?'📎 '+e.pieces.length:(e.cr?'texte':'')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Aucun examen pour ces filtres. Ajoutez le premier avec « Nouvel examen ».</div>'}`;
 }
 function vArchives(){
   const q=V.arch.q.trim().toLowerCase();
@@ -410,22 +428,24 @@ function rdvForm(id){
   <label>Date *<input name="date" type="date" required value="${esc(r.date)}"></label><label>Heure<input name="heure" type="time" value="${esc(r.heure||'')}"></label>
   <label>Acte<select name="acte">${opt(ACTES,r.acte,'—')}</select></label><label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],r.prov,'—')}</select></label>
   <label>Prise en charge<select name="pec">${opt(PEC,r.pec,'—')}</select></label><label>Statut<select name="statut">${opt(Object.entries(STATUTS).map(([k,[l]])=>[k,l]),r.statut)}</select></label></div>
+  <div class="grid pecF" style="margin-top:12px">${pecFields(r)}</div>
   <label style="margin-top:12px">Motif / service demandeur<textarea name="motif">${esc(r.motif||'')}</textarea></label></form>
   <div class="foot"><button class="btn p" form="fR">Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button><span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
-  $('#xR').onclick=()=>dlg.close();
-  $('#fR').onsubmit=async ev=>{ev.preventDefault();const o={...r,...Object.fromEntries(new FormData(ev.target))};o.nom=o.nom.trim();dlg.close();await put('rdvs',o);toast('Rendez-vous enregistré')};
+  $('#xR').onclick=()=>dlg.close();bindPec($('#fR'),{...r});
+  $('#fR').onsubmit=async ev=>{ev.preventDefault();const o=cleanPay({...r,...Object.fromEntries(new FormData(ev.target))});o.nom=o.nom.trim();dlg.close();await put('rdvs',o);toast('Rendez-vous enregistré')};
   if(id)$('#dR').onclick=()=>askConfirm('Supprimer ce rendez-vous ?',()=>del('rdvs',id));
 }
 function examForm(id,fromRdv){
   const base=S.exams.find(x=>x.id===id);
   const e=base?{...base,pieces:[...(base.pieces||[])]}:{id:uid(),date:today(),created:new Date().toISOString(),pieces:[],acte:'EEG'};
-  if(fromRdv)Object.assign(e,{nom:fromRdv.nom,acte:fromRdv.acte,prov:fromRdv.prov,pec:fromRdv.pec,date:fromRdv.date,rdv:fromRdv.id,service:fromRdv.motif||''});
+  if(fromRdv)Object.assign(e,{nom:fromRdv.nom,acte:fromRdv.acte,prov:fromRdv.prov,pec:fromRdv.pec,montant:fromRdv.montant,partEmp:fromRdv.partEmp,partPat:fromRdv.partPat,date:fromRdv.date,rdv:fromRdv.id,service:fromRdv.motif||''});
   const pj=()=>e.pieces.map((p,i)=>{const u=safeUrl(p.url);return `<div class="it"><a class="th" href="#" data-view="${i}">${isImg(p)&&u?`<img src="${esc(u)}" alt="">`:'PDF'}</a><button type="button" data-rm="${i}" aria-label="Retirer">×</button><small>${esc(p.name)}</small></div>`}).join('');
   openDlg(`<form id="fE"><h2>${base?'Examen n° '+(numbered(),base._n)+' – '+esc(base.nom):'Nouvel examen'}</h2><div class="grid" style="margin-top:14px">
   <label>Date *<input name="date" type="date" required value="${esc(e.date)}"></label><label>Prénom et nom *<input name="nom" required value="${esc(e.nom||'')}"></label>
   <label>Sexe<select name="sexe">${opt([['H','Homme'],['F','Femme']],e.sexe,'—')}</select></label><label>Âge<input name="age" inputmode="numeric" value="${esc(e.age||'')}"></label>
   <label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],e.prov,'—')}</select></label><label>Service demandeur<input name="service" value="${esc(e.service||'')}"></label>
   <label>PAF / Autres<select name="pec">${opt(PEC,e.pec,'—')}</select></label><label>Acte *<select name="acte" required>${opt(ACTES,e.acte)}</select></label></div>
+  <div class="grid pecF" style="margin-top:12px">${pecFields(e)}</div>
   <label style="margin-top:12px">Diagnostic / indication<textarea name="diag">${esc(e.diag||'')}</textarea></label>
   <label style="margin-top:12px">Observations<textarea name="obs">${esc(e.obs||'')}</textarea></label>
   <label style="margin-top:12px">Compte rendu (conclusion saisie)<textarea name="cr">${esc(e.cr||'')}</textarea></label>
@@ -440,7 +460,8 @@ function examForm(id,fromRdv){
     if(rm){e.pieces.splice(+rm.dataset.rm,1);refresh()}
     if(vw){ev.preventDefault();viewPiece(e.pieces[+vw.dataset.view])}};
   $('#xE').onclick=()=>dlg.close();
-  const collect=()=>{const o={...e,...Object.fromEntries(new FormData($('#fE')))};o.nom=(o.nom||'').trim();delete o._n;return o};
+  bindPec($('#fE'),{...e});
+  const collect=()=>{const o=cleanPay({...e,...Object.fromEntries(new FormData($('#fE')))});o.nom=(o.nom||'').trim();delete o._n;return o};
   $('#fE').onsubmit=async ev=>{ev.preventDefault();const o=collect();dlg.close();await put('exams',o);
     if(fromRdv){const r=S.rdvs.find(x=>x.id===fromRdv.id);if(r)await put('rdvs',{...r,statut:'honore',exam:o.id})}toast('Examen enregistré')};
   if(base){$('#fiche').onclick=()=>fichePDF(collect());$('#dE').onclick=()=>askConfirm('Supprimer cet examen et ses pièces ?',async()=>{for(const p of base.pieces||[]){if(p.aid&&S.assets)try{await S.assets.delete(p.aid)}catch(x){}if(p.key&&S.mode==='api')await api('DELETE','/api/files/'+p.key)}del('exams',id)})}
@@ -465,7 +486,7 @@ document.addEventListener('click',ev=>{
   else if(a==='xlsx')repXLSX(curRep());
   else if(a==='copy'){navigator.clipboard.writeText(repText(curRep())).then(()=>toast('Rapport copié'),()=>toast('Copie refusée'))}
   else if(a==='regxlsx'){if(!window.XLSX)return toast('Module Excel non chargé');const L=regList().reverse();
-    const ws=XLSX.utils.aoa_to_sheet([['N°','Date','Prénom et nom','Sexe','Âge','Provenance','Service','PAF / Autres','Acte','Diagnostic','Observations','Compte rendu','Pièces'],...L.map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.service||'',e.pec||'',e.acte||'',e.diag||'',e.obs||'',e.cr||'',(e.pieces||[]).length])]);
+    const ws=XLSX.utils.aoa_to_sheet([['N°','Date','Prénom et nom','Sexe','Âge','Provenance','Service','PAF / Autres','Montant PAF','Part employeur','Part patient','Total payé','Acte','Diagnostic','Observations','Compte rendu','Pièces'],...L.map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.service||'',e.pec||'',e.pec==='PAF'?num(e.montant):'',e.pec&&e.pec!=='PAF'?num(e.partEmp):'',e.pec&&e.pec!=='PAF'?num(e.partPat):'',e.pec?payTotal(e):'',e.acte||'',e.diag||'',e.obs||'',e.cr||'',(e.pieces||[]).length])]);
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Registre');download('Registre_'+V.reg.y+(V.reg.m!==''?'-'+pad(+V.reg.m+1):'')+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]))}
 });
 document.addEventListener('input',ev=>{const t=ev.target;if(t.closest('dialog'))return;
