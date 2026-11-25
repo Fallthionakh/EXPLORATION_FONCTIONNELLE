@@ -398,16 +398,17 @@ async function pull(){
     $('#sync').textContent='Enregistré sur le serveur · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});render()}
   catch(e){$('#sync').textContent='Hors ligne : données non à jour'}
 }
+const EYE=`<button type="button" class="eye" aria-label="Afficher le mot de passe" aria-pressed="false" title="Afficher le mot de passe"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line class="slash" x1="3" y1="3" x2="21" y2="21"/></svg></button>`;
 function vLogin(){return `<form id="fLogin" class="panel login"><span class="logo">${ic('wave',28)}</span><h2>Connexion</h2><p class="note" style="margin:8px 0 18px">Service d’exploration fonctionnelle. Les données des patients sont protégées : connectez-vous avec votre identifiant.</p>
   <label for="lg">Identifiant</label><input id="lg" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="ex. service" style="margin-bottom:14px">
-  <label for="pw">Mot de passe</label><div class="pwbox"><input id="pw" type="password" autocomplete="current-password" required><button type="button" id="pwEye" class="eye" aria-label="Afficher le mot de passe" aria-pressed="false" title="Afficher le mot de passe"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line class="slash" x1="3" y1="3" x2="21" y2="21"/></svg></button></div><p id="lErr" style="color:var(--bad);min-height:1.4em;margin:8px 0"></p><button class="btn p" style="width:100%">Se connecter</button></form>`}
-document.addEventListener('click',ev=>{const b=ev.target.closest('#pwEye');if(!b)return;const i=$('#pw'),show=i.type==='password';
+  <label for="pw">Mot de passe</label><div class="pwbox"><input id="pw" type="password" autocomplete="current-password" required>${EYE}</div><p id="lErr" style="color:var(--bad);min-height:1.4em;margin:8px 0"></p><button class="btn p" style="width:100%">Se connecter</button></form>`}
+document.addEventListener('click',ev=>{const b=ev.target.closest('.eye');if(!b)return;const i=b.parentElement.querySelector('input'),show=i.type==='password';
   i.type=show?'text':'password';b.setAttribute('aria-pressed',String(show));const t=show?'Masquer le mot de passe':'Afficher le mot de passe';b.setAttribute('aria-label',t);b.title=t;i.focus()});
 document.addEventListener('submit',async ev=>{if(ev.target.id!=='fLogin')return;ev.preventDefault();
   const r=await api('POST','/api/login',JSON.stringify({login:$('#lg').value.trim().toLowerCase(),password:$('#pw').value}));
   if(r.ok){const j=await r.json().catch(()=>({}));S.me={login:j.login,role:j.role};S.needLogin=false;await pull()}else{const j=await r.json().catch(()=>({}));$('#lErr').textContent=j.error||'Connexion impossible'}});
 /* ---------- Comptes (mode serveur) ---------- */
-const pwField=(id,lab,ac)=>`<label for="${id}">${lab}</label><input id="${id}" type="password" autocomplete="${ac}" minlength="8">`;
+const pwField=(id,lab,ac)=>`<label for="${id}">${lab}</label><div class="pwbox"><input id="${id}" type="password" autocomplete="${ac}" minlength="8">${EYE}</div>`;
 async function acctForm(){
   const me=S.me||{};let users=[];
   if(me.role==='admin'){const r=await api('GET','/api/users');if(r.ok)users=await r.json()}
@@ -437,7 +438,7 @@ async function acctForm(){
     if(r.ok){toast('Compte « '+lg+' » créé');acctForm()}else msg('#nMsg',j.error||'Échec')};
   dlg.querySelectorAll('[data-u]').forEach(b=>b.onclick=async()=>{const lg=b.dataset.u;
     if(b.dataset.k==='rm')return askConfirm('Supprimer le compte « '+lg+' » ?',async()=>{const r=await api('DELETE','/api/users/'+encodeURIComponent(lg));toast(r.ok?'Compte supprimé':'Échec');if(r.ok)acctForm()});
-    const row=b.closest('.acl');row.outerHTML=`<form class="acl" id="fRs">${av(lg)}<div><b>${esc(lg)}</b> · nouveau mot de passe<input id="rsPw" type="password" autocomplete="new-password" minlength="8" required style="margin-top:4px"></div><div class="row" style="gap:6px"><button class="btn s p">Enregistrer</button><button class="btn s" type="button" id="rsNo">Annuler</button></div></form>`;
+    const row=b.closest('.acl');row.outerHTML=`<form class="acl" id="fRs">${av(lg)}<div><b>${esc(lg)}</b> · nouveau mot de passe<div class="pwbox" style="margin-top:4px"><input id="rsPw" type="password" autocomplete="new-password" minlength="8" required>${EYE}</div></div><div class="row" style="gap:6px"><button class="btn s p">Enregistrer</button><button class="btn s" type="button" id="rsNo">Annuler</button></div></form>`;
     $('#rsPw').focus();$('#rsNo').onclick=()=>acctForm();
     $('#fRs').onsubmit=async ev=>{ev.preventDefault();const pw=$('#rsPw').value;if(pw.length<8)return toast('8 caractères minimum');
       const r=await api('PUT','/api/users/'+encodeURIComponent(lg),JSON.stringify({password:pw}));const j=await r.json().catch(()=>({}));
