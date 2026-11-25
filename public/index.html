@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carnet d'exploration fonctionnelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: clinique, calme, précis — un outil de service hospitalier.
+   IDEA: le carnet d'exploration fonctionnelle (registre papier + feuilles Excel) devenu un outil vivant.
+   PICTURE: l'agenda du jour, heures en grand, et le registre comme tableau net.
+   COLOUR and TYPE: blanc, bleu pétrole des en-têtes du carnet, surligneur jaune pour les totaux ; Archivo + Source Sans 3.
+   LAYOUT: barre d'onglets, une colonne de travail, tableaux qui défilent sur téléphone. */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0c171b);--panel:light-dark(#f3f7f8,#132228);--ink:light-dark(#10222a,#e4edf0);--mute:light-dark(#566a72,#9db1b8);
+--line:light-dark(#d6e1e4,#26383f);--brand:light-dark(#0f4c5c,#6cc0d3);--brandInk:light-dark(#ffffff,#06171c);--mark:light-dark(#f6e85a,#5a5310);
+--ok:light-dark(#1d7a46,#5fd08f);--warn:light-dark(#a3470f,#f0a06a);--bad:light-dark(#b3261e,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:clamp(20px,3vw,26px);font-weight:800}h2{font-size:clamp(24px,3.4vw,34px);font-weight:800}h3{font-size:18px;font-weight:600}
+header{background:var(--brand);color:var(--brandInk);padding:14px max(4vw,14px) 0}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.top small{opacity:.85;font-size:14px}
+nav{display:flex;gap:4px;overflow-x:auto;margin-top:12px;scrollbar-width:none}
+nav a{flex:none;color:inherit;text-decoration:none;padding:10px 16px;border-radius:10px 10px 0 0;font-weight:600;opacity:.85;min-height:44px;display:flex;align-items:center}
+nav a.on{background:var(--bg);color:var(--ink);opacity:1}
+main{padding:clamp(18px,3vw,36px) max(4vw,14px) 60px;max-width:1280px;margin:0 auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.btn{font:600 15px/1 "Source Sans 3",sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.p{background:var(--brand);color:var(--brandInk);border-color:var(--brand)}
+.btn.s{min-height:34px;padding:0 10px;font-size:14px}
+.btn.d{color:var(--bad)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav a:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+input,select,textarea{font:16px "Source Sans 3",sans-serif;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:80px;resize:vertical}
+label{display:block;font-size:14px;font-weight:600;color:var(--mute)}
+label>input,label>select,label>textarea{margin-top:4px;color:var(--ink);font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:18px 0 28px}
+.kpi{background:var(--panel);border-radius:12px;padding:14px 16px}
+.kpi b{display:block;font:800 clamp(28px,4vw,40px)/1 Archivo,sans-serif;margin-top:4px}
+.kpi span{font-size:14px;color:var(--mute)}
+.day{border-top:2px solid var(--ink);margin-top:22px;padding-top:8px}
+.day h3{display:flex;gap:10px;align-items:baseline}.day h3 small{font:400 14px "Source Sans 3",sans-serif;color:var(--mute)}
+.slot{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.slot .h{font:800 22px/1 Archivo,sans-serif;white-space:nowrap}
+.slot .who{font-weight:700}.slot .meta{font-size:14px;color:var(--mute)}
+.chip{display:inline-block;font-size:13px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--panel);white-space:nowrap}
+.chip.ok{color:var(--ok)}.chip.bad{color:var(--bad)}.chip.warn{color:var(--warn)}
+.empty{padding:28px;text-align:center;color:var(--mute);background:var(--panel);border-radius:12px;margin-top:14px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th{background:var(--brand);color:var(--brandInk);text-align:left;padding:9px 10px;font-weight:600;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.tot td{background:var(--mark);font-weight:700}
+tbody tr.click{cursor:pointer}tbody tr.click:hover td{background:var(--panel)}
+.rep h3{margin:26px 0 8px}
+.rep .head{border-left:6px solid var(--mark);padding-left:12px;margin-bottom:10px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:14px;margin-top:16px}
+.card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit}
+.card .th{aspect-ratio:4/3;background:var(--panel);display:flex;align-items:center;justify-content:center;font:800 22px Archivo,sans-serif;color:var(--mute)}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.card div.c{padding:8px 10px;font-size:14px}
+.pj{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.pj .it{position:relative;width:96px}
+.pj .it .th{width:96px;height:96px;border-radius:8px;background:var(--panel);display:flex;align-items:center;justify-content:center;overflow:hidden;font:800 16px Archivo,sans-serif;color:var(--mute)}
+.pj img{width:100%;height:100%;object-fit:cover}
+.pj .it button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:0;background:#000a;color:#fff;cursor:pointer}
+.pj .it small{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+dialog{border:0;border-radius:16px;padding:0;width:min(760px,96vw);max-height:92vh;background:var(--bg);color:var(--ink);box-shadow:0 20px 60px #0006}
+dialog::backdrop{background:#0a1a1f99}
+dialog form,dialog .in{padding:20px}
+dialog .foot{position:sticky;bottom:0;background:var(--bg);padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+.viewer img{max-width:100%;display:block;margin:0 auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:none;color:var(--ink);font:600 15px "Source Sans 3",system-ui,sans-serif;padding:0 14px;min-height:42px;cursor:pointer}
+.seg button.on{background:var(--brand);color:var(--brandInk)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.note{font-size:14px;color:var(--mute)}
+.banner{background:var(--mark);color:#222;padding:8px max(4vw,14px);font-size:14px}
+@media(prefers-reduced-motion:reduce){#toast{transition:none}}
+@media(max-width:600px){table{font-size:13px}.slot{grid-template-columns:58px minmax(0,1fr)}.slot .act{grid-column:1/-1}.slot .h{font-size:18px}
+.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute);font-weight:600}.stack td:empty{display:none}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="top"><h1>Carnet d'exploration fonctionnelle</h1><div class="row"><small id="sync">Connexion…</small><button class="btn s" id="out" hidden>Déconnexion</button></div></div>
+  <nav id="nav">
+    <a href="#accueil" data-v="accueil">Aujourd'hui</a>
+    <a href="#rendez-vous" data-v="rendez-vous">Rendez-vous</a>
+    <a href="#registre" data-v="registre">Registre</a>
+    <a href="#archives" data-v="archives">Archives</a>
+    <a href="#rapports" data-v="rapports">Rapports</a>
+  </nav>
+</header>
+<div id="banner" class="banner" hidden></div>
+<main id="main"></main>
+
+<dialog id="dlg"></dialog>
+<div id="toast" role="status"></div>
+
+<script>
+{
+/* ---------- Référentiels (repris du carnet Excel) ---------- */
+const ACTES=['EEG','EEG de sommeil','EFR'];
+const PEC=['PAF','IB','LG','Pers','Grat','CAS.','Exo','P.S'];
+const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const STATUTS={prevu:['Prévu',''],honore:['Honoré','ok'],absent:['Absent','bad'],annule:['Annulé','warn']};
+
+/* ---------- Utilitaires ---------- */
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>iso(new Date());
+const parse=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const frDate=s=>s?s.split('-').reverse().join('/'):'';
+const longDate=s=>{const d=parse(s);return JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()].toLowerCase()+' '+d.getFullYear()};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const pct=(a,b)=>b?(a/b*100).toFixed(1).replace('.',',')+' %':'0,0 %';
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)};
+const opt=(list,val,empty)=>(empty!=null?`<option value="">${esc(empty)}</option>`:'')+list.map(v=>{const[k,l]=Array.isArray(v)?v:[v,v];return `<option value="${esc(k)}"${String(k)===String(val??'')?' selected':''}>${esc(l)}</option>`}).join('');
+
+/* ---------- Stockage : base de l'artefact, sinon navigateur ---------- */
+const S={exams:[],rdvs:[],mode:'local',db:null,assets:null,dl:null};
+const LS='carnet-ef-v1';
+function loadLocal(){try{const j=JSON.parse(localStorage.getItem(LS)||'{}');S.exams=j.exams||[];S.rdvs=j.rdvs||[]}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify({exams:S.exams,rdvs:S.rdvs}))}catch(e){toast('Stockage local plein')}}
+const COL={exams:'examens',rdvs:'rendezvous'};
+async function put(kind,obj){
+  const list=S[kind],i=list.findIndex(x=>x.id===obj.id);
+  if(i<0)list.push(obj);else list[i]=obj;
+  if(S.mode==='db'){const{id,...body}=obj;try{await S.db.collection(COL[kind]).doc(id).set(JSON.parse(JSON.stringify(body)))}catch(e){toast(e.code==='quota_exceeded'?'Base pleine : supprimez des éléments':'Échec de l’enregistrement');throw e}}
+  else if(S.mode==='api'){const r=await api('PUT','/api/items/'+COL[kind]+'/'+encodeURIComponent(obj.id),JSON.stringify(obj));if(!r.ok){toast('Échec de l’enregistrement');throw new Error('save')}}
+  else saveLocal();
+  render();
+}
+async function del(kind,id){
+  S[kind]=S[kind].filter(x=>x.id!==id);
+  if(S.mode==='db'){try{await S.db.collection(COL[kind]).doc(id).delete()}catch(e){toast('Échec de la suppression')}}else if(S.mode==='api'){const r=await api('DELETE','/api/items/'+COL[kind]+'/'+encodeURIComponent(id));if(!r.ok)toast('Échec de la suppression')}else saveLocal();
+  render();
+}
+async function initStore(){
+  const c=window.claude;
+  if(!c||!c.use){await initApi();return}
+  const db=await Promise.race([c.use('db').catch(()=>null),new Promise(r=>setTimeout(()=>r(null),10000))]);
+  if(!db){setLocal();return}
+  S.db=db;S.mode='db';
+  c.use('assets').then(a=>S.assets=a).catch(()=>{});
+  c.use('downloads').then(d=>S.dl=d).catch(()=>{});
+  let got=0;const timer=setTimeout(()=>{if(got<2)$('#sync').textContent='Données injoignables pour le moment'},10000);
+  for(const kind of ['exams','rdvs']){
+    let first=true;
+    db.collection(COL[kind]).onSnapshot(s=>{S[kind]=s.docs.map(d=>({...d.data(),id:d.id}));if(first&&!s.metadata.fromCache){first=false;got++}if(got>=2){clearTimeout(timer);$('#sync').textContent='Enregistré en ligne'}render()},
+      e=>{clearTimeout(timer);$('#sync').textContent='Accès aux données refusé ou interrompu'});
+  }
+}
+/* Mode serveur (Cloudflare) : /api/* protégé par mot de passe */
+async function api(method,url,body,headers){
+  const r=await fetch(url,{method,body,headers:{'content-type':'application/json',...(headers||{})},credentials:'same-origin'});
+  if(r.status===401&&!url.endsWith('/login')){S.needLogin=true;render()}
+  return r;
+}
+async function initApi(){
+  let r;try{r=await fetch('/api/me',{credentials:'same-origin'})}catch(e){setLocal();return}
+  if(!(r.headers.get('content-type')||'').includes('json')){setLocal();return}
+  S.mode='api';$('#out').hidden=false;
+  if(r.status===401){S.needLogin=true;$('#sync').textContent='Connexion requise';render();return}
+  if(!r.ok){$('#sync').textContent='Serveur indisponible ('+r.status+')';return}
+  await pull();setInterval(()=>{if(!dlg.open&&!document.hidden)pull()},60000);
+  addEventListener('focus',()=>{if(!dlg.open)pull()});
+}
+async function pull(){
+  if(S.needLogin)return;
+  try{const r=await api('GET','/api/items');if(!r.ok)return;const j=await r.json();S.exams=j.examens||[];S.rdvs=j.rendezvous||[];
+    $('#sync').textContent='Enregistré sur le serveur · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});render()}
+  catch(e){$('#sync').textContent='Hors ligne : données non à jour'}
+}
+function vLogin(){return `<form id="fLogin" style="max-width:420px;margin:8vh auto"><h2>Connexion</h2><p class="note">Les données des patients sont protégées. Entrez le mot de passe du service.</p>
+  <label>Mot de passe<input id="pw" type="password" autocomplete="current-password" required></label><p id="lErr" style="color:var(--bad)"></p><button class="btn p">Se connecter</button></form>`}
+document.addEventListener('submit',async ev=>{if(ev.target.id!=='fLogin')return;ev.preventDefault();
+  const r=await api('POST','/api/login',JSON.stringify({password:$('#pw').value}));
+  if(r.ok){S.needLogin=false;await pull()}else{const j=await r.json().catch(()=>({}));$('#lErr').textContent=j.error||'Connexion impossible'}});
+function setLocal(){S.mode='local';loadLocal();$('#sync').textContent='Enregistré sur cet appareil';render()}
+
+/* ---------- Pièces jointes ---------- */
+async function shrink(file){
+  if(!file.type.startsWith('image/')||file.type==='image/svg+xml')return file;
+  try{const bmp=await createImageBitmap(file);const k=Math.min(1,1800/Math.max(bmp.width,bmp.height));
+    const cv=document.createElement('canvas');cv.width=Math.round(bmp.width*k);cv.height=Math.round(bmp.height*k);
+    cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
+    return await new Promise(r=>cv.toBlob(b=>r(b||file),'image/jpeg',.82));}catch(e){return file}
+}
+const toDataURL=b=>new Promise((r,j)=>{const f=new FileReader();f.onload=()=>r(f.result);f.onerror=j;f.readAsDataURL(b)});
+async function storeFile(file){
+  const blob=await shrink(file);
+  const type=blob.type||file.type;
+  if(S.mode==='db'){
+    if(!S.assets)throw new Error('Envoi de fichiers indisponible (droits d’édition requis)');
+    const a=await S.assets.upload(blob);
+    return{aid:a.id,url:'/_blob/'+a.id,name:file.name||'photo.jpg',type:a.contentType||type,size:a.sizeBytes};
+  }
+  if(S.mode==='api'){
+    const r=await api('POST','/api/files',blob,{'content-type':type,'x-filename':encodeURIComponent(file.name||'photo.jpg')});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Envoi impossible');
+    return{key:j.key,url:j.url,name:j.name,type:j.type,size:j.size};
+  }
+  return{url:await toDataURL(blob),name:file.name||'photo.jpg',type,size:blob.size};
+}
+const isImg=p=>/^image\//.test(p.type||'');
+const safeUrl=u=>/^(\/_blob\/|\/api\/files\/[0-9a-f-]{36}$|data:image\/|data:application\/pdf|blob:)/.test(u||'')?u:'';
+
+/* ---------- Téléchargement ---------- */
+async function download(filename,data){
+  if(S.dl){try{await S.dl.save({filename,data});toast('Fichier prêt : '+filename)}catch(e){toast(e.code==='declined'?'Téléchargement annulé':'Téléchargement impossible ici')}return}
+  const blob=data instanceof Blob?data:new Blob([data]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+
+/* ---------- Calculs ---------- */
+function numbered(){ // N° d'ordre par année, comme le registre papier
+  const by={};[...S.exams].sort((a,b)=>(a.date+(a.created||'')).localeCompare(b.date+(b.created||''))).forEach(e=>{const y=e.date.slice(0,4);by[y]=(by[y]||0)+1;e._n=by[y]});
+  return S.exams;
+}
+const inMonth=(e,y,m)=>e.date.startsWith(y+'-'+pad(m+1));
+const inRange=(e,a,b)=>e.date>=a&&e.date<=b;
+const count=(list,f)=>list.filter(f).length;
+
+/* ---------- Rapports : une même structure pour l'écran, le PDF et Excel ---------- */
+function repMensuel(y,m){
+  const L=S.exams.filter(e=>inMonth(e,y,m));
+  const last=new Date(y,m+1,0).getDate();
+  const head=['Actes',...PEC,'Non rens.','EXT','INT','TOT'];
+  const line=(lab,f)=>{const l=L.filter(f);return[lab,...PEC.map(p=>count(l,e=>e.pec===p)),count(l,e=>!PEC.includes(e.pec)),count(l,e=>e.prov==='Ext'),count(l,e=>e.prov==='Int'),l.length]};
+  const body=ACTES.map(a=>line(a,e=>e.acte===a));
+  if(L.some(e=>!ACTES.includes(e.acte)))body.push(line('Autre',e=>!ACTES.includes(e.acte)));
+  const R=S.rdvs.filter(r=>inMonth(r,y,m));
+  return{title:'Activités exploration fonctionnelle – '+MOIS[m]+' '+y,sub:'Du 01/'+pad(m+1)+'/'+y+' au '+last+'/'+pad(m+1)+'/'+y,file:'Rapport_mensuel_'+y+'-'+pad(m+1),
+    sections:[{h:'Actes par prise en charge',head,body,foot:line('TOTAL',()=>true)},
+      {h:'Rendez-vous du mois',head:['Statut','Effectif','%'],body:Object.entries(STATUTS).map(([k,[l]])=>[l,count(R,r=>(r.statut||'prevu')===k),pct(count(R,r=>(r.statut||'prevu')===k),R.length)]),foot:['Total',R.length,R.length?'100,0 %':'0,0 %']},
+      {h:'Registre du mois',head:['N°','Date','Prénom et nom','Sexe','Âge','Prov.','Prise en charge','Acte','Diagnostic','CR'],wide:true,
+       body:numbered().filter(e=>inMonth(e,y,m)).sort((a,b)=>a._n-b._n).map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.pec||'',e.acte||'',e.diag||'',(e.pieces||[]).length?(e.pieces.length+' pièce(s)'):(e.cr?'texte':'—')])}]};
+}
+function repAnnuel(y){
+  const head=['Mois',...ACTES,'TOTAL','EXT','INT',...PEC];
+  const line=(lab,L)=>[lab,...ACTES.map(a=>count(L,e=>e.acte===a)),L.length,count(L,e=>e.prov==='Ext'),count(L,e=>e.prov==='Int'),...PEC.map(p=>count(L,e=>e.pec===p))];
+  return{title:'Récapitulatif annuel – exploration fonctionnelle – '+y,sub:'Année '+y,file:'Recapitulatif_annuel_'+y,
+    sections:[{h:'Actes par mois',head,body:MOIS.map((n,m)=>line(n,S.exams.filter(e=>inMonth(e,y,m)))),foot:line('TOTAL ANNÉE',S.exams.filter(e=>e.date.startsWith(y+'-')))}]};
+}
+function repSynthese(a,b){
+  const L=S.exams.filter(e=>inRange(e,a,b)),n=L.length;
+  const blk=(h,pairs)=>({h,head:[h,'Effectif','%'],body:pairs.map(([l,f])=>{const c=count(L,f);return[l,c,pct(c,n)]}),foot:['Total',n,n?'100,0 %':'0,0 %']});
+  const R=S.rdvs.filter(r=>inRange(r,a,b)),hon=count(R,r=>r.statut==='honore'),abs=count(R,r=>r.statut==='absent');
+  return{title:'Synthèse générale – exploration fonctionnelle',sub:'Période du '+frDate(a)+' au '+frDate(b),file:'Synthese_'+a+'_'+b,
+    sections:[{h:'Total général',head:['Indicateur','Effectif'],body:[['Total patients enregistrés',n],['Rendez-vous pris',R.length],['Rendez-vous honorés',hon],['Absences',abs],['Taux de présence',(hon+abs)?pct(hon,hon+abs):'—'],['Comptes rendus archivés',count(L,e=>(e.pieces||[]).length||e.cr)]]},
+      blk('Par sexe',[['Hommes',e=>e.sexe==='H'],['Femmes',e=>e.sexe==='F'],['Non renseigné',e=>!['H','F'].includes(e.sexe)]]),
+      blk('Externes / Internes',[['Externes (Ext)',e=>e.prov==='Ext'],['Internes (Int)',e=>e.prov==='Int'],['Non renseigné',e=>!['Ext','Int'].includes(e.prov)]]),
+      blk('PAF / Autres',[...PEC.map(p=>[p,e=>e.pec===p]),['Non renseigné',e=>!PEC.includes(e.pec)]]),
+      blk("Par type d'acte",[...ACTES.map(x=>[x,e=>e.acte===x]),['Autre',e=>!ACTES.includes(e.acte)]])]};
+}
+function repHTML(r){
+  return `<div class="rep"><div class="head"><h2>${esc(r.title)}</h2><div class="note">${esc(r.sub)}</div></div>`+r.sections.map(s=>`<h3>${esc(s.h)}</h3>`+(s.body.length?`<div class="scroll"><table class="${s.wide?'stack':''}"><thead><tr>${s.head.map((h,i)=>`<th class="${i&&!s.wide?'n':''}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${s.body.map(r=>`<tr>${r.map((c,i)=>`<td class="${i&&!s.wide?'n':''}">${esc(c)}</td>`).join('')}</tr>`).join('')}${s.foot?`<tr class="tot">${s.foot.map((c,i)=>`<td class="${i?'n':''}">${esc(c)}</td>`).join('')}</tr>`:''}</tbody></table></div>`:'<div class="empty">Aucune donnée sur la période.</div>')).join('')+'</div>';
+}
+function pdfDoc(landscape){
+  if(!window.jspdf){toast('Module PDF non chargé, vérifiez la connexion');return null}
+  return new window.jspdf.jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4'});
+}
+function repPDF(r){
+  const wide=r.sections.some(s=>s.head.length>9);const doc=pdfDoc(wide);if(!doc)return;
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(r.title,14,16);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(90);doc.text(r.sub+'   ·   édité le '+frDate(today()),14,22);doc.setTextColor(0);
+  let y=28;
+  for(const s of r.sections){
+    doc.setFont('helvetica','bold');doc.setFontSize(11);
+    if(y>doc.internal.pageSize.getHeight()-30){doc.addPage();y=16}
+    doc.text(s.h,14,y+4);
+    doc.autoTable({startY:y+6,head:[s.head],body:s.body.map(r=>r.map(String)),foot:s.foot?[s.foot.map(String)]:undefined,theme:'grid',
+      styles:{fontSize:8.5,cellPadding:1.6},headStyles:{fillColor:[15,76,92]},footStyles:{fillColor:[246,232,90],textColor:20},
+      columnStyles:s.wide?{8:{cellWidth:60}}:{},didParseCell:d=>{if(!s.wide&&d.column.index>0)d.cell.styles.halign='right'}});
+    y=doc.lastAutoTable.finalY+8;
+  }
+  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(120);doc.text('Page '+i+' / '+n,doc.internal.pageSize.getWidth()-28,doc.internal.pageSize.getHeight()-8)}
+  download(r.file+'.pdf',doc.output('blob'));
+}
+function repXLSX(r){
+  if(!window.XLSX){toast('Module Excel non chargé');return}
+  const rows=[[r.title],[r.sub],[]];
+  for(const s of r.sections){rows.push([s.h],s.head,...s.body);if(s.foot)rows.push(s.foot);rows.push([])}
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Rapport');
+  download(r.file+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]));
+}
+function repText(r){return r.title+'\n'+r.sub+'\n\n'+r.sections.map(s=>s.h+'\n'+[s.head,...s.body,...(s.foot?[s.foot]:[])].map(x=>x.join('\t')).join('\n')).join('\n\n')}
+
+/* Fiche d'examen + compte rendu en PDF, avec les photos */
+async function fichePDF(e){
+  const doc=pdfDoc(false);if(!doc)return;toast('Préparation de la fiche…');
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Compte rendu – '+(e.acte||'Exploration fonctionnelle'),14,16);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);
+  doc.autoTable({startY:22,theme:'plain',styles:{fontSize:10,cellPadding:1.2},columnStyles:{0:{fontStyle:'bold',cellWidth:42}},
+    body:[['Patient',e.nom||''],['Date',frDate(e.date)],['Sexe / âge',[e.sexe==='H'?'Homme':e.sexe==='F'?'Femme':'',e.age?e.age+' ans':''].filter(Boolean).join(', ')],['Provenance',[e.prov,e.service].filter(Boolean).join(' – ')],['Prise en charge',e.pec||''],['Indication / diagnostic',e.diag||''],['Observations',e.obs||''],['Compte rendu',e.cr||'']]});
+  let y=doc.lastAutoTable.finalY+6;const W=doc.internal.pageSize.getWidth()-28,H=doc.internal.pageSize.getHeight();
+  const others=[];
+  for(const p of e.pieces||[]){
+    if(!isImg(p)){others.push(p.name);continue}
+    try{const src=p.url.startsWith('data:')?p.url:await toDataURL(await (await fetch(safeUrl(p.url))).blob());
+      const im=await new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=src});
+      let w=W,h=w*im.height/im.width;if(h>H-30){h=H-30;w=h*im.width/im.height}
+      if(y+h>H-12){doc.addPage();y=14}
+      doc.addImage(src,src.startsWith('data:image/png')?'PNG':'JPEG',14,y,w,h);y+=h+6;}catch(err){others.push(p.name+' (image non lisible)')}
+  }
+  if(others.length){if(y>H-20){doc.addPage();y=14}doc.setFontSize(9);doc.text('Autres pièces archivées : '+others.join(', '),14,y)}
+  download('CR_'+(e.nom||'patient').replace(/[^\p{L}\d]+/gu,'_')+'_'+e.date+'.pdf',doc.output('blob'));
+}
+
+/* ---------- Vues ---------- */
+const V={view:'accueil',rdvDay:today(),reg:{m:String(new Date().getMonth()),y:String(new Date().getFullYear()),acte:'',q:''},arch:{q:'',y:String(new Date().getFullYear())},
+  rep:{kind:'mensuel',m:new Date().getMonth(),y:new Date().getFullYear(),a:today().slice(0,8)+'01',b:today()}};
+
+function slotHTML(r){
+  const[st,cl]=STATUTS[r.statut||'prevu'];
+  return `<div class="slot"><div class="h">${esc(r.heure||'--:--')}</div><div><div class="who">${esc(r.nom)}</div><div class="meta">${esc([r.acte,r.prov,r.pec,r.tel].filter(Boolean).join(' · '))}${r.motif?' — '+esc(r.motif):''}</div></div>
+  <div class="act row"><span class="chip ${cl}">${st}</span>${(r.statut||'prevu')==='prevu'?`<button class="btn s p" data-a="arrive" data-id="${esc(r.id)}">Arrivé · saisir l'examen</button><button class="btn s" data-a="absent" data-id="${esc(r.id)}">Absent</button>`:''}<button class="btn s" data-a="rdv" data-id="${esc(r.id)}">Modifier</button></div></div>`;
+}
+function vAccueil(){
+  const t=today(),d=new Date(),y=d.getFullYear(),m=d.getMonth();
+  const R=S.rdvs.filter(r=>r.date===t).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
+  const M=S.exams.filter(e=>inMonth(e,y,m));
+  const next=S.rdvs.filter(r=>r.date>t&&(r.statut||'prevu')==='prevu').sort((a,b)=>(a.date+a.heure).localeCompare(b.date+b.heure)).slice(0,5);
+  return `<div class="row"><h2>${esc(longDate(t).replace(/^./,c=>c.toUpperCase()))}</h2><span class="sp"></span><button class="btn p" data-a="rdv">+ Rendez-vous</button><button class="btn" data-a="exam">+ Examen</button></div>
+  <div class="kpis">${[['RDV aujourd’hui',R.length],['Examens en '+MOIS[m].toLowerCase(),M.length],...ACTES.map(a=>[a,count(M,e=>e.acte===a)]),['CR archivés ce mois',count(M,e=>(e.pieces||[]).length||e.cr)]].map(([l,v])=>`<div class="kpi"><span>${esc(l)}</span><b>${v}</b></div>`).join('')}</div>
+  <h3>Agenda du jour</h3>${R.length?R.map(slotHTML).join(''):'<div class="empty">Aucun rendez-vous aujourd’hui.</div>'}
+  <h3 style="margin-top:28px">Prochains rendez-vous</h3>${next.length?next.map(r=>`<div class="slot"><div class="h">${esc(frDate(r.date).slice(0,5))}</div><div><div class="who">${esc(r.nom)}</div><div class="meta">${esc(r.heure||'')} · ${esc(r.acte||'')}</div></div><div class="act"><button class="btn s" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div></div>`).join(''):'<div class="empty">Rien de prévu pour la suite.</div>'}`;
+}
+function vRdv(){
+  const d=parse(V.rdvDay),mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
+  const days=[...Array(6)].map((_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return iso(x)});
+  return `<div class="row"><h2>Rendez-vous</h2><span class="sp"></span><button class="btn p" data-a="rdv">+ Nouveau rendez-vous</button></div>
+  <div class="row" style="margin-top:14px"><button class="btn" data-a="wk" data-d="-7" aria-label="Semaine précédente">‹</button><button class="btn" data-a="wk" data-d="0">Cette semaine</button><button class="btn" data-a="wk" data-d="7" aria-label="Semaine suivante">›</button><label style="width:auto">Aller au<input type="date" id="rdvDay" value="${esc(V.rdvDay)}"></label></div>
+  ${days.map(dd=>{const R=S.rdvs.filter(r=>r.date===dd).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
+    return `<div class="day"><h3>${esc(longDate(dd).replace(/^./,c=>c.toUpperCase()))}<small>${R.length} rendez-vous</small>${dd===today()?'<span class="chip ok">aujourd’hui</span>':''}</h3>${R.length?R.map(slotHTML).join(''):'<div class="note" style="padding:8px 0">Libre</div>'}</div>`}).join('')}`;
+}
+function regList(){
+  const f=V.reg,q=f.q.trim().toLowerCase();
+  return numbered().filter(e=>e.date.startsWith(f.y+'-')&&(f.m===''||inMonth(e,+f.y,+f.m))&&(!f.acte||e.acte===f.acte)&&(!q||[e.nom,e.diag,e.obs,e.service].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b._n-a._n);
+}
+function years(){const s=new Set([...S.exams,...S.rdvs].map(e=>e.date.slice(0,4)));s.add(String(new Date().getFullYear()));return[...s].sort().reverse()}
+function vRegistre(){
+  const L=regList(),f=V.reg;
+  return `<div class="row"><h2>Registre des examens</h2><span class="sp"></span><button class="btn" data-a="regxlsx">Exporter Excel</button><button class="btn p" data-a="exam">+ Nouvel examen</button></div>
+  <div class="grid" style="margin:16px 0"><label>Année<select id="fY">${opt(years(),f.y)}</select></label><label>Mois<select id="fM">${opt(MOIS.map((n,i)=>[i,n]),f.m,'Toute l’année')}</select></label><label>Acte<select id="fA">${opt(ACTES,f.acte,'Tous')}</select></label><label>Rechercher<input id="fQ" type="search" value="${esc(f.q)}" placeholder="Nom, diagnostic…"></label></div>
+  <div class="note">${L.length} examen(s) · Hommes ${count(L,e=>e.sexe==='H')} · Femmes ${count(L,e=>e.sexe==='F')} · Externes ${count(L,e=>e.prov==='Ext')} · Internes ${count(L,e=>e.prov==='Int')}</div>
+  ${L.length?`<div class="scroll" style="margin-top:10px"><table class="stack"><thead><tr><th>N°</th><th>Date</th><th>Prénom et nom</th><th>Sexe/âge</th><th>Prov.</th><th>PAF / Autres</th><th>Acte</th><th>Diagnostic</th><th>CR</th></tr></thead><tbody>
+  ${L.map(e=>`<tr class="click" data-a="exam" data-id="${esc(e.id)}"><td>${e._n}</td><td style="white-space:nowrap">${esc(frDate(e.date))}</td><td><b>${esc(e.nom)}</b></td><td>${esc([e.sexe,e.age].filter(Boolean).join(' · '))}</td><td>${esc(e.prov||'')}</td><td>${esc(e.pec||'')}</td><td>${esc(e.acte||'')}</td><td>${esc(e.diag||'')}</td><td>${(e.pieces||[]).length?'📎 '+e.pieces.length:(e.cr?'texte':'')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Aucun examen pour ces filtres. Ajoutez le premier avec « Nouvel examen ».</div>'}`;
+}
+function vArchives(){
+  const q=V.arch.q.trim().toLowerCase();
+  const items=numbered().filter(e=>e.date.startsWith(V.arch.y+'-')&&((e.pieces||[]).length||e.cr)&&(!q||[e.nom,e.diag,e.acte,e.cr].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+  return `<div class="row"><h2>Archives des comptes rendus</h2><span class="sp"></span><button class="btn p" data-a="exam">+ Archiver un compte rendu</button></div>
+  <p class="note">Chaque compte rendu est rattaché à l’examen du registre : photo prise au téléphone, scan PDF ou texte saisi.</p>
+  <div class="grid" style="max-width:640px"><label>Année<select id="aY">${opt(years(),V.arch.y)}</select></label><label>Rechercher<input id="aQ" type="search" value="${esc(V.arch.q)}" placeholder="Patient, acte, conclusion…"></label></div>
+  ${items.length?`<div class="gal">${items.map(e=>{const p=(e.pieces||[]).find(isImg);const u=p&&safeUrl(p.url);
+    return `<button class="card" data-a="exam" data-id="${esc(e.id)}"><div class="th">${u?`<img src="${esc(u)}" alt="" loading="lazy">`:((e.pieces||[]).length?'PDF':'CR')}</div><div class="c"><b>${esc(e.nom)}</b><br>${esc(frDate(e.date))} · ${esc(e.acte||'')}<br><span class="note">${(e.pieces||[]).length} pièce(s)</span></div></button>`}).join('')}</div>`:'<div class="empty">Aucun compte rendu archivé pour ces critères.</div>'}`;
+}
+function curRep(){const r=V.rep;return r.kind==='mensuel'?repMensuel(+r.y,+r.m):r.kind==='annuel'?repAnnuel(+r.y):repSynthese(r.a,r.b)}
+function vRapports(){
+  const r=V.rep;
+  return `<div class="row"><h2>Rapports</h2></div>
+  <div class="row" style="margin:16px 0"><div class="seg" role="tablist">${[['mensuel','Mensuel'],['annuel','Annuel'],['synthese','Synthèse']].map(([k,l])=>`<button data-a="rk" data-k="${k}" class="${r.kind===k?'on':''}">${l}</button>`).join('')}</div>
+  ${r.kind==='mensuel'?`<label style="width:auto">Mois<select id="rM">${opt(MOIS.map((n,i)=>[i,n]),r.m)}</select></label>`:''}
+  ${r.kind!=='synthese'?`<label style="width:auto">Année<input id="rY" type="number" value="${esc(r.y)}" style="width:110px"></label>`:`<label style="width:auto">Du<input id="rA" type="date" value="${esc(r.a)}"></label><label style="width:auto">Au<input id="rB" type="date" value="${esc(r.b)}"></label>`}
+  <span class="sp"></span><button class="btn p" data-a="pdf">Télécharger PDF</button><button class="btn" data-a="xlsx">Excel</button><button class="btn" data-a="copy">Copier</button></div>
+  ${repHTML(curRep())}`;
+}
+function render(){
+  if(S.needLogin){$('#main').innerHTML=vLogin();document.querySelectorAll('#nav a').forEach(a=>a.classList.remove('on'));setTimeout(()=>$('#pw')&&$('#pw').focus());return}
+  if(!V.busy){const a=document.activeElement,id=a&&a.id,pos=a&&a.selectionStart;
+    $('#main').innerHTML=({accueil:vAccueil,'rendez-vous':vRdv,registre:vRegistre,archives:vArchives,rapports:vRapports}[V.view]||vAccueil)();
+    if(id&&$('#'+id)){const n=$('#'+id);n.focus();try{if(pos!=null)n.setSelectionRange(pos,pos)}catch(e){}}}
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===V.view));
+}
+function route(){const h=location.hash.slice(1);V.view=['accueil','rendez-vous','registre','archives','rapports'].includes(h)?h:'accueil';render()}
+
+/* ---------- Formulaires ---------- */
+const dlg=$('#dlg');
+function openDlg(html){dlg.innerHTML=html;dlg.showModal();V.busy=false}
+dlg.addEventListener('close',()=>render());
+function askConfirm(msg,ok){openDlg(`<div class="in"><h3>${esc(msg)}</h3></div><div class="foot"><button class="btn d" id="cfOk">Supprimer</button><button class="btn" id="cfNo">Annuler</button></div>`);$('#cfOk').onclick=()=>{dlg.close();ok()};$('#cfNo').onclick=()=>dlg.close()}
+
+function rdvForm(id){
+  const r=S.rdvs.find(x=>x.id===id)||{id:uid(),date:V.view==='rendez-vous'?V.rdvDay:today(),heure:'08:30',statut:'prevu',acte:'EEG'};
+  openDlg(`<form id="fR"><h2>${id?'Rendez-vous':'Nouveau rendez-vous'}</h2><div class="grid" style="margin-top:14px">
+  <label>Prénom et nom *<input name="nom" required value="${esc(r.nom||'')}"></label><label>Téléphone<input name="tel" type="tel" value="${esc(r.tel||'')}"></label>
+  <label>Date *<input name="date" type="date" required value="${esc(r.date)}"></label><label>Heure<input name="heure" type="time" value="${esc(r.heure||'')}"></label>
+  <label>Acte<select name="acte">${opt(ACTES,r.acte,'—')}</select></label><label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],r.prov,'—')}</select></label>
+  <label>Prise en charge<select name="pec">${opt(PEC,r.pec,'—')}</select></label><label>Statut<select name="statut">${opt(Object.entries(STATUTS).map(([k,[l]])=>[k,l]),r.statut)}</select></label></div>
+  <label style="margin-top:12px">Motif / service demandeur<textarea name="motif">${esc(r.motif||'')}</textarea></label></form>
+  <div class="foot"><button class="btn p" form="fR">Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button><span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
+  $('#xR').onclick=()=>dlg.close();
+  $('#fR').onsubmit=async ev=>{ev.preventDefault();const o={...r,...Object.fromEntries(new FormData(ev.target))};o.nom=o.nom.trim();dlg.close();await put('rdvs',o);toast('Rendez-vous enregistré')};
+  if(id)$('#dR').onclick=()=>askConfirm('Supprimer ce rendez-vous ?',()=>del('rdvs',id));
+}
+function examForm(id,fromRdv){
+  const base=S.exams.find(x=>x.id===id);
+  const e=base?{...base,pieces:[...(base.pieces||[])]}:{id:uid(),date:today(),created:new Date().toISOString(),pieces:[],acte:'EEG'};
+  if(fromRdv)Object.assign(e,{nom:fromRdv.nom,acte:fromRdv.acte,prov:fromRdv.prov,pec:fromRdv.pec,date:fromRdv.date,rdv:fromRdv.id,service:fromRdv.motif||''});
+  const pj=()=>e.pieces.map((p,i)=>{const u=safeUrl(p.url);return `<div class="it"><a class="th" href="#" data-view="${i}">${isImg(p)&&u?`<img src="${esc(u)}" alt="">`:'PDF'}</a><button type="button" data-rm="${i}" aria-label="Retirer">×</button><small>${esc(p.name)}</small></div>`}).join('');
+  openDlg(`<form id="fE"><h2>${base?'Examen n° '+(numbered(),base._n)+' – '+esc(base.nom):'Nouvel examen'}</h2><div class="grid" style="margin-top:14px">
+  <label>Date *<input name="date" type="date" required value="${esc(e.date)}"></label><label>Prénom et nom *<input name="nom" required value="${esc(e.nom||'')}"></label>
+  <label>Sexe<select name="sexe">${opt([['H','Homme'],['F','Femme']],e.sexe,'—')}</select></label><label>Âge<input name="age" inputmode="numeric" value="${esc(e.age||'')}"></label>
+  <label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],e.prov,'—')}</select></label><label>Service demandeur<input name="service" value="${esc(e.service||'')}"></label>
+  <label>PAF / Autres<select name="pec">${opt(PEC,e.pec,'—')}</select></label><label>Acte *<select name="acte" required>${opt(ACTES,e.acte)}</select></label></div>
+  <label style="margin-top:12px">Diagnostic / indication<textarea name="diag">${esc(e.diag||'')}</textarea></label>
+  <label style="margin-top:12px">Observations<textarea name="obs">${esc(e.obs||'')}</textarea></label>
+  <label style="margin-top:12px">Compte rendu (conclusion saisie)<textarea name="cr">${esc(e.cr||'')}</textarea></label>
+  <h3 style="margin-top:16px">Compte rendu archivé</h3>
+  <div class="row" style="margin-top:8px"><label class="btn">📷 Prendre une photo<input type="file" accept="image/*" capture="environment" hidden id="pPh"></label><label class="btn">📄 Ajouter un document<input type="file" accept="image/*,application/pdf" multiple hidden id="pDoc"></label><span class="note" id="pSt"></span></div>
+  <div class="pj" id="pj">${pj()}</div></form>
+  <div class="foot"><button class="btn p" form="fE">Enregistrer</button><button class="btn" type="button" id="xE">Fermer</button>${base?'<button class="btn" type="button" id="fiche">Fiche PDF</button>':''}<span class="sp"></span>${base?'<button class="btn d" id="dE">Supprimer</button>':''}</div>`);
+  const refresh=()=>{$('#pj').innerHTML=pj()};
+  const add=async files=>{for(const f of files){$('#pSt').textContent='Envoi de '+f.name+'…';try{e.pieces.push(await storeFile(f));refresh()}catch(err){toast(err.message||'Envoi impossible')}}$('#pSt').textContent=''};
+  $('#pPh').onchange=ev=>add([...ev.target.files]);$('#pDoc').onchange=ev=>add([...ev.target.files]);
+  $('#pj').onclick=ev=>{const rm=ev.target.closest('[data-rm]'),vw=ev.target.closest('[data-view]');
+    if(rm){e.pieces.splice(+rm.dataset.rm,1);refresh()}
+    if(vw){ev.preventDefault();viewPiece(e.pieces[+vw.dataset.view])}};
+  $('#xE').onclick=()=>dlg.close();
+  const collect=()=>{const o={...e,...Object.fromEntries(new FormData($('#fE')))};o.nom=(o.nom||'').trim();delete o._n;return o};
+  $('#fE').onsubmit=async ev=>{ev.preventDefault();const o=collect();dlg.close();await put('exams',o);
+    if(fromRdv){const r=S.rdvs.find(x=>x.id===fromRdv.id);if(r)await put('rdvs',{...r,statut:'honore',exam:o.id})}toast('Examen enregistré')};
+  if(base){$('#fiche').onclick=()=>fichePDF(collect());$('#dE').onclick=()=>askConfirm('Supprimer cet examen et ses pièces ?',async()=>{for(const p of base.pieces||[]){if(p.aid&&S.assets)try{await S.assets.delete(p.aid)}catch(x){}if(p.key&&S.mode==='api')await api('DELETE','/api/files/'+p.key)}del('exams',id)})}
+}
+function viewPiece(p){
+  const u=safeUrl(p.url);if(!u)return;
+  const w=document.createElement('dialog');w.className='viewer';
+  w.innerHTML=`<div class="in">${isImg(p)?`<img src="${esc(u)}" alt="${esc(p.name)}">`:`<p>${esc(p.name)}</p><p><a href="${esc(u)}" target="_blank" rel="noopener">Ouvrir le document</a></p>`}</div><div class="foot"><button class="btn" type="button">Fermer</button></div>`;
+  document.body.append(w);w.querySelector('button').onclick=()=>{w.close();w.remove()};w.showModal();
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('[data-a]');if(!t||t.closest('#dlg form'))return;const a=t.dataset.a,id=t.dataset.id;
+  if(a==='rdv')rdvForm(id);
+  else if(a==='exam')examForm(id);
+  else if(a==='arrive')examForm(null,S.rdvs.find(r=>r.id===id));
+  else if(a==='absent'){const r=S.rdvs.find(x=>x.id===id);put('rdvs',{...r,statut:'absent'})}
+  else if(a==='wk'){const d=+t.dataset.d;if(!d)V.rdvDay=today();else{const x=parse(V.rdvDay);x.setDate(x.getDate()+d);V.rdvDay=iso(x)}render()}
+  else if(a==='rk'){V.rep.kind=t.dataset.k;render()}
+  else if(a==='pdf')repPDF(curRep());
+  else if(a==='xlsx')repXLSX(curRep());
+  else if(a==='copy'){navigator.clipboard.writeText(repText(curRep())).then(()=>toast('Rapport copié'),()=>toast('Copie refusée'))}
+  else if(a==='regxlsx'){if(!window.XLSX)return toast('Module Excel non chargé');const L=regList().reverse();
+    const ws=XLSX.utils.aoa_to_sheet([['N°','Date','Prénom et nom','Sexe','Âge','Provenance','Service','PAF / Autres','Acte','Diagnostic','Observations','Compte rendu','Pièces'],...L.map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.service||'',e.pec||'',e.acte||'',e.diag||'',e.obs||'',e.cr||'',(e.pieces||[]).length])]);
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Registre');download('Registre_'+V.reg.y+(V.reg.m!==''?'-'+pad(+V.reg.m+1):'')+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]))}
+});
+document.addEventListener('input',ev=>{const t=ev.target;if(t.closest('dialog'))return;
+  const map={fQ:()=>V.reg.q=t.value,aQ:()=>V.arch.q=t.value};if(map[t.id]){map[t.id]();render()}});
+document.addEventListener('change',ev=>{const t=ev.target;if(t.closest('dialog'))return;
+  const map={fY:()=>V.reg.y=t.value,fM:()=>V.reg.m=t.value,fA:()=>V.reg.acte=t.value,aY:()=>V.arch.y=t.value,rdvDay:()=>t.value&&(V.rdvDay=t.value),
+    rM:()=>V.rep.m=+t.value,rY:()=>V.rep.y=+t.value||V.rep.y,rA:()=>V.rep.a=t.value||V.rep.a,rB:()=>V.rep.b=t.value||V.rep.b};
+  if(map[t.id]){map[t.id]();render()}});
+addEventListener('hashchange',route);
+$('#out').onclick=async()=>{await api('POST','/api/logout');S.exams=[];S.rdvs=[];S.needLogin=true;render()};
+route();
+initStore();
+}
+</script>
+</body>
+</html>
