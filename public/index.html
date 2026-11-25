@@ -72,6 +72,20 @@ fieldset .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px
 .note{font-size:13.5px;color:var(--mute)}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--brand2);color:var(--brand);white-space:nowrap}
 .chip.ok{background:color-mix(in srgb,var(--ok) 13%,transparent);color:var(--ok)}.chip.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}.chip.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.chip.info{background:color-mix(in srgb,var(--a2) 14%,transparent);color:var(--a2)}
+.q{display:grid;grid-template-columns:52px auto minmax(0,1fr);gap:14px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-top:10px}
+.q .n{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;font-weight:800;background:var(--panel)}
+.q.urgence{border-color:color-mix(in srgb,var(--bad) 55%,var(--line));background:color-mix(in srgb,var(--bad) 6%,var(--surface))}.q.urgence .n{background:var(--bad);color:#fff}
+.q.prio{border-color:color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 6%,var(--surface))}.q.prio .n{background:var(--warn);color:#fff}
+.q.encours{border-color:color-mix(in srgb,var(--a2) 50%,var(--line))}.q.encours .n{background:var(--a2);color:#fff}
+.q .meta{font-size:13px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:3px}
+.q .act{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-top:10px;border-top:1px dashed var(--line)}
+.btn.on-bad{background:var(--bad);color:#fff;border-color:transparent}.btn.on-warn{background:var(--warn);color:#fff;border-color:transparent}
+.qgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;margin-top:16px;align-items:start}.qgrid .panel+.panel{margin:0}
+.dlist .row2{display:grid;grid-template-columns:60px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}.dlist .row2:last-child{border:0}
+.dlist .row2 b.h{font-size:16px}
+@media(max-width:1000px){.qgrid{grid-template-columns:1fr}}
+@media(max-width:600px){.q{grid-template-columns:44px minmax(0,1fr);gap:10px}.q .av{display:none}.dlist .row2{grid-template-columns:52px minmax(0,1fr)}.dlist .row2 .act{grid-column:1/-1}}
 .tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:8px;white-space:nowrap;--c:var(--a0);color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
 .a1{--c:var(--a1)}.a2{--c:var(--a2)}.a3{--c:var(--a3)}.a0{--c:var(--a0)}
 .av{width:36px;height:36px;border-radius:50%;display:inline-grid;place-items:center;font-size:13px;font-weight:800;flex:none;color:#fff}
@@ -177,6 +191,7 @@ body.locked{background:radial-gradient(1200px 600px at 20% -10%,var(--brand2),tr
 .ev:hover{box-shadow:0 4px 12px rgb(0 0 0/.12)}
 .ev b.t{color:var(--c)}.ev span{color:var(--mute);font-size:11.5px}
 .ev.honore::after{content:"✓";position:absolute;top:3px;right:6px;font-weight:800;color:var(--ok)}
+.ev.attente::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--warn)}.ev.encours::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--a2)}
 .ev.absent{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bad) 10%,var(--surface)) 0 6px,var(--surface) 6px 12px);border-left-color:var(--bad)}
 .ev.annule{opacity:.5;text-decoration:line-through}
 .ev.dragging{z-index:6;box-shadow:var(--sh2);cursor:grabbing;opacity:.96}
@@ -248,7 +263,7 @@ const ACTES=['EEG','EEG de sommeil','EFR'];
 const PEC=['PAF','IB','LG','Pers','Grat','CAS.','Exo','P.S'];
 const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-const STATUTS={prevu:['Prévu',''],honore:['Honoré','ok'],absent:['Absent','bad'],annule:['Annulé','warn']};
+const STATUTS={prevu:['Prévu',''],attente:['En salle d’attente','warn'],encours:['En examen','info'],honore:['Honoré','ok'],absent:['Absent','bad'],annule:['Annulé','warn']};
 
 /* ---------- Utilitaires ---------- */
 const $=s=>document.querySelector(s);
@@ -296,6 +311,7 @@ cam:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V
 search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',
 money:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
 user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',steth:'<path d="M5 3v6a5 5 0 0 0 10 0V3M10 14v2a5 5 0 0 0 10 0v-3"/><circle cx="20" cy="11" r="2"/>',note:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',hand:'<path d="M7 11V6a2 2 0 0 1 4 0v5M11 10V4a2 2 0 0 1 4 0v6M15 10V6a2 2 0 0 1 4 0v8a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.5L3 14a2 2 0 0 1 3.4-2z"/>'};
+P.up='<path d="m6 15 6-6 6 6"/>';P.down='<path d="m6 9 6 6 6-6"/>';
 const ic=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
 document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic,e.classList.contains('logo')?22:20));
 const AC=a=>'a'+((ACTES.indexOf(a)+1)||0);
@@ -509,6 +525,36 @@ function slotHTML(r){const st=r.statut||'prevu';
   return `<div class="slot"><div class="h">${esc(r.heure||'--:--')}<small>${+r.duree||30} min</small></div>${av(r.nom)}<div><div class="who">${esc(r.nom)}</div><div class="meta">${tag(r.acte)}${esc([provL(r.prov),r.pec,r.tel].filter(Boolean).join(' · '))}</div></div>
   <div class="act">${stChip(r)}${st==='prevu'?`<button class="btn s p" data-a="arrive" data-id="${esc(r.id)}">${ic('check',16)}Arrivé</button><button class="btn s" data-a="absent" data-id="${esc(r.id)}">Absent</button>`:''}<button class="btn s ghost" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div></div>`;
 }
+/* ---------- File d'attente ---------- */
+const PRANK={urgence:0,prio:1};
+const nowHM=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+const waitMin=r=>{if(!r.arrivee)return 0;const d=new Date(),[h,m]=r.arrivee.split(':').map(Number);return r.date===today()?Math.max(0,d.getHours()*60+d.getMinutes()-h*60-m):0};
+const queueOf=day=>S.rdvs.filter(r=>r.date===day&&r.statut==='attente').sort((a,b)=>((PRANK[a.prio]??2)-(PRANK[b.prio]??2))||((a.qpos||0)-(b.qpos||0)));
+function qRow(r,i,list){const pr=r.prio||'',enc=r.statut==='encours';
+  return `<div class="q ${enc?'encours':pr}"><div class="n" title="${enc?'En examen':'Position dans la file'}">${enc?ic('wave',22):i+1}</div>${av(r.nom)}
+  <div><div class="who"><b>${esc(r.nom)}</b> ${pr==='urgence'?'<span class="chip bad">Urgence</span>':pr==='prio'?'<span class="chip warn">Prioritaire</span>':''}</div>
+  <div class="meta">${tag(r.acte)}${r.heure?`<span>RDV ${esc(r.heure)}</span>`:''}${enc?`<span>en examen depuis ${esc(r.debut||'')}</span>`:`<span>arrivé à ${esc(r.arrivee||'')}${waitMin(r)?` · attend depuis ${waitMin(r)} min`:''}</span>`}</div></div>
+  <div class="act">${enc?`<button class="btn s p" data-a="qfin" data-id="${esc(r.id)}">${ic('check',16)}Terminer · saisir l’examen</button><button class="btn s" data-a="qback" data-id="${esc(r.id)}">Remettre en attente</button>`:
+  `<button class="btn s icon" data-a="qup" data-id="${esc(r.id)}" aria-label="Monter" title="Monter" ${i?'':'disabled'}>${ic('up',16)}</button><button class="btn s icon" data-a="qdown" data-id="${esc(r.id)}" aria-label="Descendre" title="Descendre" ${i<list.length-1?'':'disabled'}>${ic('down',16)}</button>
+  <button class="btn s ${pr==='urgence'?'on-bad':''}" data-a="qprio" data-k="urgence" data-id="${esc(r.id)}" aria-pressed="${pr==='urgence'}">Urgence</button><button class="btn s ${pr==='prio'?'on-warn':''}" data-a="qprio" data-k="prio" data-id="${esc(r.id)}" aria-pressed="${pr==='prio'}">Prioritaire</button>
+  <button class="btn s p" data-a="qcall" data-id="${esc(r.id)}">Appeler</button><button class="btn s ghost" data-a="qout" data-id="${esc(r.id)}" title="Retirer de la file">${ic('x',16)}</button>`}</div></div>`}
+function queueHTML(day){
+  const Q=queueOf(day),E=S.rdvs.filter(r=>r.date===day&&r.statut==='encours');
+  return `<section class="panel"><div class="ph"><h3>Salle d’attente</h3><span class="chip warn">${Q.length} en attente</span>${E.length?`<span class="chip info">${E.length} en examen</span>`:''}</div>
+  ${E.map(r=>qRow(r,0,E)).join('')}${Q.map((r,i)=>qRow(r,i,Q)).join('')}${!Q.length&&!E.length?emptyBox('Personne en attente. Cliquez sur « Arrivé » quand un patient se présente.','users'):''}</section>`;
+}
+function dayListHTML(day){
+  const R=S.rdvs.filter(r=>r.date===day).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
+  const c=k=>count(R,r=>(r.statut||'prevu')===k);
+  return `<section class="panel dlist"><div class="ph"><h3>Rendez-vous du ${esc(frDate(day))}</h3><span class="note">${R.length} au total</span></div>
+  <div class="stats">${Object.entries(STATUTS).map(([k,[l,cl]])=>c(k)?`<span class="chip ${cl}">${c(k)} ${esc(l.toLowerCase())}</span>`:'').join('')}</div>
+  ${R.length?R.map(r=>{const st=r.statut||'prevu';return `<div class="row2"><b class="h">${esc(r.heure||'--:--')}</b><div><b>${esc(r.nom)}</b><div class="meta note" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px">${tag(r.acte)}${stChip(r)}${r.prio==='urgence'?'<span class="chip bad">Urgence</span>':r.prio==='prio'?'<span class="chip warn">Prioritaire</span>':''}</div></div>
+  <div class="act row" style="gap:6px">${st==='prevu'?`<button class="btn s p" data-a="arrive" data-id="${esc(r.id)}">${ic('check',16)}Arrivé</button><button class="btn s" data-a="absent" data-id="${esc(r.id)}">Absent</button>`:''}<button class="btn s ghost" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div></div>`}).join(''):emptyBox('Aucun rendez-vous ce jour.','cal')}</section>`;
+}
+async function qMove(id,dir){
+  const r=S.rdvs.find(x=>x.id===id);if(!r)return;const Q=queueOf(r.date),i=Q.findIndex(x=>x.id===id),j=i+dir,o=Q[j];if(!o)return;
+  if((PRANK[o.prio]??2)!==(PRANK[r.prio]??2)){toast(o.prio?'Un patient '+(o.prio==='urgence'?'en urgence':'prioritaire')+' est devant : changez la priorité pour le dépasser':'Retirez la priorité pour descendre plus bas');return}
+  const a=r.qpos||0,b=o.qpos||0;await put('rdvs',{...r,qpos:b===a?b+dir:b});await put('rdvs',{...o,qpos:a})}
 function vAccueil(){
   const t=today(),d=new Date(),y=d.getFullYear(),m=d.getMonth(),pm=m?m-1:11,py=m?y:y-1;
   const R=S.rdvs.filter(r=>r.date===t).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
@@ -528,7 +574,7 @@ function vAccueil(){
   return pageHead(hello,esc(longDate(t).replace(/^./,c=>c.toUpperCase()))+' · voici l’activité du service',`<button class="btn" data-a="exam">${ic('plus',18)}Nouvel examen</button>`)+
   `<div class="kpis">${K.map(([i,l,v,dl,c])=>`<div class="kpi ${c}"><div class="kic">${ic(i,22)}</div><b>${v}</b><span>${esc(l)}</span>${dl}</div>`).join('')}</div>
   <div class="dash"><section class="panel"><div class="ph"><h3>Agenda du jour</h3><a class="btn s ghost" href="#rendez-vous">Voir l’agenda ${ic('right',16)}</a></div>${R.length?R.map(slotHTML).join(''):emptyBox('Aucun rendez-vous aujourd’hui.','cal')}</section>
-  <div class="col"><section class="panel"><div class="ph"><h3>Activité sur 6 mois</h3></div>${chart}</section>
+  <div class="col">${queueHTML(t)}<section class="panel"><div class="ph"><h3>Activité sur 6 mois</h3></div>${chart}</section>
   <section class="panel"><div class="ph"><h3>Prochains rendez-vous</h3></div>${next.length?next.map(r=>{const x=parse(r.date);return `<div class="mini"><div class="d"><b>${x.getDate()}</b><small>${MOIS[x.getMonth()].slice(0,4)}</small></div><div class="i"><b>${esc(r.nom)}</b><small>${esc(r.heure||'')} · ${esc(r.acte||'')}</small></div><button class="btn s ghost" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div>`}).join(''):emptyBox('Rien de prévu pour la suite.','clock')}</section></div></div>`;
 }
 /* ---------- Agenda (jour / semaine / mois) avec glisser-déposer ---------- */
@@ -570,7 +616,8 @@ function vRdv(){
   <div class="row" style="gap:6px"><button class="btn icon" data-a="wk" data-d="-1" aria-label="Précédent">${ic('left',18)}</button><button class="btn" data-a="wk" data-d="0">Aujourd’hui</button><button class="btn icon" data-a="wk" data-d="1" aria-label="Suivant">${ic('right',18)}</button></div>
   <span class="when">${esc(title)}</span><span class="sp"></span><input type="date" id="rdvDay" value="${esc(d)}" aria-label="Aller à la date" style="width:auto"></div>
   ${body}
-  <p class="note hint">${ic('hand',18)}Cliquez sur un créneau libre pour créer, sur un rendez-vous pour le modifier. Glissez-le pour le déplacer ; tirez son bord bas pour changer la durée.</p></section>`;
+  <p class="note hint">${ic('hand',18)}Cliquez sur un créneau libre pour créer, sur un rendez-vous pour le modifier. Glissez-le pour le déplacer ; tirez son bord bas pour changer la durée.</p></section>
+  <div class="qgrid">${dayListHTML(d)}${queueHTML(d)}</div>`;
 }
 /* Glisser-déposer (souris et doigt) */
 let drag=null;
@@ -657,8 +704,8 @@ function rdvForm(id,preset){
   <label style="margin-top:14px">Motif / service demandeur<textarea name="motif">${esc(r.motif||'')}</textarea></label></fieldset>
   <fieldset><legend>${ic('money',18)}Prise en charge</legend><div class="g3"><label>Prise en charge<select name="pec">${opt(PEC,r.pec,'—')}</select></label>
   <div class="pecF">${pecFields(r)}</div></div></fieldset></form>
-  <div class="foot"><button class="btn p" form="fR">${ic('check',18)}Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button>${id&&(r.statut||'prevu')==='prevu'?'<button class="btn" type="button" id="aR">Arrivé · saisir l’examen</button>':''}<span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
-  if($('#aR'))$('#aR').onclick=()=>{dlg.close();examForm(null,r)};
+  <div class="foot"><button class="btn p" form="fR">${ic('check',18)}Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button>${id&&(r.statut||'prevu')==='prevu'?'<button class="btn" type="button" id="aR">Marquer arrivé</button>':''}<span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
+  if($('#aR'))$('#aR').onclick=async()=>{dlg.close();await put('rdvs',{...r,statut:'attente',arrivee:nowHM(),qpos:Date.now()});toast(r.nom+' est en salle d’attente')};
   $('#xR').onclick=()=>dlg.close();bindPec($('#fR'),{...r});bindAge($('#fR'));
   $('#fR').onsubmit=async ev=>{ev.preventDefault();const o=cleanPay({...r,...Object.fromEntries(new FormData(ev.target))});o.nom=o.nom.trim();dlg.close();await put('rdvs',o);toast('Rendez-vous enregistré')};
   if(id)$('#dR').onclick=()=>askConfirm('Supprimer ce rendez-vous ?',()=>del('rdvs',id));
@@ -710,7 +757,13 @@ document.addEventListener('click',ev=>{
   const t=ev.target.closest('[data-a]');if(!t||t.closest('#dlg form'))return;const a=t.dataset.a,id=t.dataset.id;
   if(a==='rdv')rdvForm(id);
   else if(a==='exam')examForm(id);
-  else if(a==='arrive')examForm(null,S.rdvs.find(r=>r.id===id));
+  else if(a==='arrive'){const r=S.rdvs.find(x=>x.id===id);put('rdvs',{...r,statut:'attente',arrivee:nowHM(),qpos:Date.now()}).then(()=>toast(r.nom+' est en salle d’attente (n° '+(queueOf(r.date).findIndex(x=>x.id===id)+1)+')'))}
+  else if(a==='qup'||a==='qdown')qMove(id,a==='qup'?-1:1);
+  else if(a==='qprio'){const r=S.rdvs.find(x=>x.id===id),k=t.dataset.k;put('rdvs',{...r,prio:r.prio===k?'':k}).then(()=>k!==r.prio&&toast(k==='urgence'?'Urgence : patient placé en tête de file':'Prioritaire : patient remonté dans la file'))}
+  else if(a==='qcall'){const r=S.rdvs.find(x=>x.id===id);put('rdvs',{...r,statut:'encours',debut:nowHM()})}
+  else if(a==='qback'){const r=S.rdvs.find(x=>x.id===id);put('rdvs',{...r,statut:'attente'})}
+  else if(a==='qout'){const r=S.rdvs.find(x=>x.id===id);put('rdvs',{...r,statut:'prevu',arrivee:'',qpos:0,prio:''})}
+  else if(a==='qfin')examForm(null,S.rdvs.find(r=>r.id===id));
   else if(a==='absent'){const r=S.rdvs.find(x=>x.id===id);put('rdvs',{...r,statut:'absent'})}
   else if(a==='wk'){const d=+t.dataset.d;if(!d)V.rdvDay=today();else if(V.cal==='month'){const x=parse(V.rdvDay);x.setDate(1);x.setMonth(x.getMonth()+d);V.rdvDay=iso(x)}else V.rdvDay=addDays(V.rdvDay,d*(V.cal==='week'?7:1));render()}
   else if(a==='cv'){V.cal=t.dataset.k;render()}
@@ -731,6 +784,7 @@ document.addEventListener('change',ev=>{const t=ev.target;if(t.closest('dialog')
     rM:()=>V.rep.m=+t.value,rY:()=>V.rep.y=+t.value||V.rep.y,rA:()=>V.rep.a=t.value||V.rep.a,rB:()=>V.rep.b=t.value||V.rep.b};
   if(map[t.id]){map[t.id]();render()}});
 addEventListener('hashchange',route);
+setInterval(()=>{if(!dlg.open&&!drag&&!S.needLogin&&['accueil','rendez-vous'].includes(V.view)&&!(document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)))render()},60000);
 $('#out').onclick=async()=>{await api('POST','/api/logout');S.exams=[];S.rdvs=[];S.needLogin=true;render()};
 route();
 initStore();
