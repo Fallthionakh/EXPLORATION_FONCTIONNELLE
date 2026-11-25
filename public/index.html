@@ -5,111 +5,207 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Carnet d'exploration fonctionnelle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* VOICE: clinique, calme, précis — un outil de service hospitalier.
-   IDEA: le carnet d'exploration fonctionnelle (registre papier + feuilles Excel) devenu un outil vivant.
-   PICTURE: l'agenda du jour, heures en grand, et le registre comme tableau net.
-   COLOUR and TYPE: blanc, bleu pétrole des en-têtes du carnet, surligneur jaune pour les totaux ; Archivo + Source Sans 3.
-   LAYOUT: barre d'onglets, une colonne de travail, tableaux qui défilent sur téléphone. */
+/* VOICE: clinique, calme, moderne — l'outil quotidien d'un service hospitalier d'exploration fonctionnelle.
+   IDEA: un poste de travail médical : barre latérale, tableau de bord, agenda, registre ; le tracé EEG comme signature.
+   PICTURE: l'agenda du jour et l'activité des six derniers mois, en cartes nettes.
+   COLOUR and TYPE: fond gris-bleu clair, cartes blanches, sarcelle médicale ; un code couleur par acte (EEG, sommeil, EFR) ; Plus Jakarta Sans.
+   LAYOUT: barre latérale + contenu sur ordinateur, barre d'onglets en bas sur téléphone. */
 :root{color-scheme:light dark;
---bg:light-dark(#ffffff,#0c171b);--panel:light-dark(#f3f7f8,#132228);--ink:light-dark(#10222a,#e4edf0);--mute:light-dark(#566a72,#9db1b8);
---line:light-dark(#d6e1e4,#26383f);--brand:light-dark(#0f4c5c,#6cc0d3);--brandInk:light-dark(#ffffff,#06171c);--mark:light-dark(#f6e85a,#5a5310);
---ok:light-dark(#1d7a46,#5fd08f);--warn:light-dark(#a3470f,#f0a06a);--bad:light-dark(#b3261e,#ff8a80)}
+--bg:light-dark(#f2f5f8,#0a1317);--surface:light-dark(#ffffff,#101c21);--panel:light-dark(#f4f7f9,#16252b);--ink:light-dark(#0f1e25,#e5eef1);--mute:light-dark(#5d6d76,#93a7af);
+--line:light-dark(#e2e8ed,#22343b);--brand:light-dark(#0b6e77,#4cc4cf);--brand2:light-dark(#e4f3f4,#0d2e33);--brandInk:light-dark(#ffffff,#03191c);--mark:light-dark(#fff4bf,#463f0e);
+--ok:light-dark(#15803d,#4ade80);--warn:light-dark(#b45309,#fbbf24);--bad:light-dark(#dc2626,#f87171);
+--a1:light-dark(#0d9488,#2dd4bf);--a2:light-dark(#6366f1,#a5b4fc);--a3:light-dark(#0284c7,#7dd3fc);--a0:light-dark(#64748b,#94a3b8);
+--sh:0 1px 2px rgb(15 30 37/.05),0 2px 6px rgb(15 30 37/.05);--sh2:0 18px 48px rgb(15 30 37/.18);--r:16px}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",system-ui,sans-serif;overflow-x:clip}
-h1,h2,h3{font-family:Archivo,system-ui,sans-serif;line-height:1.1;margin:0;text-wrap:balance}
-h1{font-size:clamp(20px,3vw,26px);font-weight:800}h2{font-size:clamp(24px,3.4vw,34px);font-weight:800}h3{font-size:18px;font-weight:600}
-header{background:var(--brand);color:var(--brandInk);padding:14px max(4vw,14px) 0}
-.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
-.top small{opacity:.85;font-size:14px}
-nav{display:flex;gap:4px;overflow-x:auto;margin-top:12px;scrollbar-width:none}
-nav a{flex:none;color:inherit;text-decoration:none;padding:10px 16px;border-radius:10px 10px 0 0;font-weight:600;opacity:.85;min-height:44px;display:flex;align-items:center}
-nav a.on{background:var(--bg);color:var(--ink);opacity:1}
-main{padding:clamp(18px,3vw,36px) max(4vw,14px) 60px;max-width:1280px;margin:0 auto}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.sp{flex:1}
-.btn{font:600 15px/1 "Source Sans 3",sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.btn.p{background:var(--brand);color:var(--brandInk);border-color:var(--brand)}
-.btn.s{min-height:34px;padding:0 10px;font-size:14px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.55 "Plus Jakarta Sans",system-ui,sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:inherit;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(24px,3vw,30px);font-weight:800}h3{font-size:17px;font-weight:700}
+.ic{flex:none;display:block}
+/* ---- coque ---- */
+.app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:22px}
+.brand{display:flex;gap:12px;align-items:center;padding:2px 6px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand),color-mix(in srgb,var(--brand) 55%,var(--a2)));color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 6px 16px color-mix(in srgb,var(--brand) 35%,transparent)}
+.brand b{display:block;font-size:15px;line-height:1.2}.brand small{color:var(--mute);font-size:12.5px}
+#nav{display:flex;flex-direction:column;gap:4px}
+#nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--mute);text-decoration:none;font-weight:600;min-height:44px}
+#nav a:hover{background:var(--panel);color:var(--ink)}
+#nav a.on{background:var(--brand2);color:var(--brand)}
+#nav .short{display:none}
+.sidecard{margin-top:auto;background:var(--panel);border-radius:14px;padding:14px;font-size:13px;color:var(--mute)}
+.sidecard b{color:var(--ink);display:block;margin-bottom:2px}
+.content{display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px clamp(16px,3vw,32px);background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.tb-brand{display:none;align-items:center;gap:10px;font-weight:800}
+.tb-brand .logo{width:34px;height:34px;border-radius:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:6px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 20%,transparent)}
+main{padding:clamp(18px,3vw,32px);max-width:1380px;width:100%;margin:0 auto;flex:1}
+/* ---- éléments ---- */
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{flex:1}
+.pagehead{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.pagehead .sub{margin:6px 0 0;color:var(--mute)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(16px,2vw,22px)}
+.panel+.panel{margin-top:16px}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:14px}.ph h3{flex:1}.ph .note{margin:0}
+.btn{font:600 14.5px/1 "Plus Jakarta Sans",system-ui,sans-serif;min-height:42px;padding:0 16px;border-radius:11px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:background .15s,box-shadow .15s,transform .05s}
+a.btn{text-decoration:none}.btn:hover{background:var(--panel)}.btn:active{transform:translateY(1px)}
+.btn.p{background:var(--brand);color:var(--brandInk);border-color:transparent;box-shadow:0 4px 12px color-mix(in srgb,var(--brand) 28%,transparent)}
+.btn.p:hover{background:color-mix(in srgb,var(--brand) 88%,#000)}
+.btn.s{min-height:34px;padding:0 11px;font-size:13.5px;border-radius:9px}
+.btn.ghost{border-color:transparent;background:transparent}.btn.ghost:hover{background:var(--panel)}
+.btn.icon{width:42px;padding:0}
 .btn.d{color:var(--bad)}
-.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav a:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
-input,select,textarea{font:16px "Source Sans 3",sans-serif;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
-textarea{min-height:80px;resize:vertical}
-label{display:block;font-size:14px;font-weight:600;color:var(--mute)}
-label>input,label>select,label>textarea{margin-top:4px;color:var(--ink);font-weight:400}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:18px 0 28px}
-.kpi{background:var(--panel);border-radius:12px;padding:14px 16px}
-.kpi b{display:block;font:800 clamp(28px,4vw,40px)/1 Archivo,sans-serif;margin-top:4px}
-.kpi span{font-size:14px;color:var(--mute)}
-.day{border-top:2px solid var(--ink);margin-top:22px;padding-top:8px}
-.day h3{display:flex;gap:10px;align-items:baseline}.day h3 small{font:400 14px "Source Sans 3",sans-serif;color:var(--mute)}
-.slot{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
-.slot .h{font:800 22px/1 Archivo,sans-serif;white-space:nowrap}
-.slot .who{font-weight:700}.slot .meta{font-size:14px;color:var(--mute)}
-.chip{display:inline-block;font-size:13px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--panel);white-space:nowrap}
-.chip.ok{color:var(--ok)}.chip.bad{color:var(--bad)}.chip.warn{color:var(--warn)}
-.empty{padding:28px;text-align:center;color:var(--mute);background:var(--panel);border-radius:12px;margin-top:14px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,#nav a:focus-visible,.card:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:2px}
+input,select,textarea{font:15.5px "Plus Jakarta Sans",system-ui,sans-serif;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);width:100%;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand2);outline:none}
+textarea{min-height:84px;resize:vertical}
+label{display:block;font-size:13px;font-weight:600;color:var(--mute)}
+label>input,label>select,label>textarea{margin-top:6px;color:var(--ink);font-weight:500}
+fieldset .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.g3 .span2{grid-column:span 2}.g3 .full{grid-column:1/-1}.g3 .pecF{display:contents}
+@media(max-width:640px){fieldset .g3{grid-template-columns:1fr}.g3 .span2{grid-column:auto}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px}
+.note{font-size:13.5px;color:var(--mute)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--brand2);color:var(--brand);white-space:nowrap}
+.chip.ok{background:color-mix(in srgb,var(--ok) 13%,transparent);color:var(--ok)}.chip.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}.chip.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:8px;white-space:nowrap;--c:var(--a0);color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.a1{--c:var(--a1)}.a2{--c:var(--a2)}.a3{--c:var(--a3)}.a0{--c:var(--a0)}
+.av{width:36px;height:36px;border-radius:50%;display:inline-grid;place-items:center;font-size:13px;font-weight:800;flex:none;color:#fff}
+.av.v0{background:#0d9488}.av.v1{background:#6366f1}.av.v2{background:#0284c7}.av.v3{background:#db2777}.av.v4{background:#d97706}.av.v5{background:#7c3aed}
+.pat{display:flex;align-items:center;gap:10px}.pat small{display:block;color:var(--mute);font-size:12.5px}
+.empty{padding:36px 20px;text-align:center;color:var(--mute);background:var(--panel);border:1px dashed var(--line);border-radius:14px}
+.empty .ic{margin:0 auto 8px;opacity:.6}
+/* ---- tableau de bord ---- */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-bottom:18px}
+@media(max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center}
+.kpi .kic{grid-row:span 2;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--c,var(--brand));background:color-mix(in srgb,var(--c,var(--brand)) 13%,transparent)}
+.kpi b{font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--mute);font-weight:600}
+.kpi .delta{grid-column:1/-1;font-size:12.5px;color:var(--mute);margin-top:6px;font-weight:600}.delta.up{color:var(--ok)}.delta.down{color:var(--bad)}
+@media(max-width:600px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpi{grid-template-columns:1fr;gap:6px}.kpi .kic{grid-row:auto;width:36px;height:36px}.kpi .delta{margin-top:0}}
+.dash{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}
+.dash .col{display:grid;gap:16px}.dash .panel+.panel{margin:0}
+.slot{display:grid;grid-template-columns:64px auto minmax(0,1fr) auto;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line);align-items:center}
+.slot:last-child{border-bottom:0}
+.slot .h{font-size:18px;font-weight:800;line-height:1.1;white-space:nowrap}.slot .h small{display:block;font-size:12px;color:var(--mute);font-weight:600}
+.slot .who{font-weight:700}.slot .meta{font-size:13px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:3px}
+.slot .act{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.bars{display:flex;gap:10px;height:190px;align-items:stretch}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bar .colb{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.stackbar{width:100%;max-width:40px;display:flex;flex-direction:column-reverse;border-radius:9px;overflow:hidden;min-height:3px;background:var(--panel)}
+.stackbar i{display:block;background:var(--c)}
+.bar b{font-size:13px}.bar span{font-size:12px;color:var(--mute)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--mute)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.mini{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.mini:last-child{border:0}
+.mini .d{width:46px;text-align:center;border-radius:10px;background:var(--panel);padding:5px 0;line-height:1.1}.mini .d b{display:block;font-size:17px}.mini .d small{font-size:11px;color:var(--mute);text-transform:lowercase}
+.mini .i{flex:1}.mini .i small{display:block;color:var(--mute);font-size:12.5px}
+/* ---- tableaux ---- */
 .scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:15px}
-th{background:var(--brand);color:var(--brandInk);text-align:left;padding:9px 10px;font-weight:600;white-space:nowrap}
-td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:14.5px}
+th{background:var(--panel);color:var(--mute);text-align:left;padding:11px 12px;font-weight:700;font-size:12.5px;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child{border-top-left-radius:10px}th:last-child{border-top-right-radius:10px}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-tr.tot td{background:var(--mark);font-weight:700}
-tbody tr.click{cursor:pointer}tbody tr.click:hover td{background:var(--panel)}
-.rep h3{margin:26px 0 8px}
-.rep .head{border-left:6px solid var(--mark);padding-left:12px;margin-bottom:10px}
-.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:14px;margin-top:16px}
-.card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit}
-.card .th{aspect-ratio:4/3;background:var(--panel);display:flex;align-items:center;justify-content:center;font:800 22px Archivo,sans-serif;color:var(--mute)}
+tr.tot td{background:var(--mark);font-weight:800}
+tbody tr.click{cursor:pointer}tbody tr.click:hover td{background:color-mix(in srgb,var(--brand2) 55%,transparent)}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:12px;margin-bottom:16px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.rep h3{margin:24px 0 10px}
+.rep .head{padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:6px}.rep .head h2{font-size:clamp(20px,2.4vw,24px)}
+/* ---- archives ---- */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:16px}
+.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.card .th{aspect-ratio:4/3;background:var(--panel);display:grid;place-items:center;color:var(--mute)}
 .card img{width:100%;height:100%;object-fit:cover;display:block}
-.card div.c{padding:8px 10px;font-size:14px}
-.pj{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-.pj .it{position:relative;width:96px}
-.pj .it .th{width:96px;height:96px;border-radius:8px;background:var(--panel);display:flex;align-items:center;justify-content:center;overflow:hidden;font:800 16px Archivo,sans-serif;color:var(--mute)}
+.card div.c{padding:12px 14px;font-size:13.5px;display:grid;gap:6px}
+.pj{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.pj .it{position:relative;width:100px}
+.pj .it .th{width:100px;height:100px;border-radius:12px;background:var(--panel);display:grid;place-items:center;overflow:hidden;font-weight:800;color:var(--mute);border:1px solid var(--line)}
 .pj img{width:100%;height:100%;object-fit:cover}
-.pj .it button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:0;background:#000a;color:#fff;cursor:pointer}
-.pj .it small{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-dialog{border:0;border-radius:16px;padding:0;width:min(760px,96vw);max-height:92vh;background:var(--bg);color:var(--ink);box-shadow:0 20px 60px #0006}
-dialog::backdrop{background:#0a1a1f99}
-dialog form,dialog .in{padding:20px}
-dialog .foot{position:sticky;bottom:0;background:var(--bg);padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
-.viewer img{max-width:100%;display:block;margin:0 auto}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.seg button{border:0;background:none;color:var(--ink);font:600 15px "Source Sans 3",system-ui,sans-serif;padding:0 14px;min-height:42px;cursor:pointer}
-.seg button.on{background:var(--brand);color:var(--brandInk)}
-#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.pj .it button{position:absolute;top:5px;right:5px;width:28px;height:28px;border-radius:50%;border:0;background:#000b;color:#fff;cursor:pointer}
+.pj .it small{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
+.drop-zone{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px;border:1.5px dashed color-mix(in srgb,var(--brand) 40%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--brand2) 45%,transparent)}
+/* ---- fenêtres ---- */
+dialog{border:0;border-radius:20px;padding:0;width:min(860px,96vw);max-height:92vh;background:var(--surface);color:var(--ink);box-shadow:var(--sh2)}
+dialog[open]{animation:pop .18s ease-out}@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.985)}}
+dialog::backdrop{background:rgb(8 20 26/.5);backdrop-filter:blur(3px)}
+dialog form,dialog .in{padding:0 24px 8px}
+.dh{position:sticky;top:0;z-index:2;background:var(--surface);display:flex;gap:12px;align-items:center;padding:20px 24px 16px;margin:0 -24px 16px;border-bottom:1px solid var(--line)}
+.dh .ttl{flex:1}.dh small{color:var(--brand);font-weight:700;font-size:12.5px}.dh h2{font-size:22px}
+.dh .x{width:40px;height:40px;border-radius:50%;border:0;background:var(--panel);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+fieldset{border:0;padding:0;margin:0 0 20px}
+legend{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:12px;padding:0}
+legend .ic{color:var(--brand)}
+dialog .foot{position:sticky;bottom:0;background:var(--surface);padding:14px 24px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+dialog .in{padding:24px}
+.viewer img{max-width:100%;display:block;margin:0 auto;border-radius:10px}
+.seg{display:inline-flex;background:var(--panel);border-radius:12px;padding:4px;gap:2px}
+.seg button{border:0;background:none;color:var(--mute);font:600 14px "Plus Jakarta Sans",system-ui,sans-serif;padding:0 14px;min-height:36px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;box-shadow:var(--sh2)}
 #toast.on{opacity:1}
-.pwbox{position:relative;margin-top:4px}.pwbox input{padding-right:52px}
+/* ---- connexion ---- */
+body.locked .side,body.locked .topbar{display:none}body.locked .app{grid-template-columns:1fr}
+body.locked{background:radial-gradient(1200px 600px at 20% -10%,var(--brand2),transparent),var(--bg)}
+.login{max-width:420px;margin:10vh auto;text-align:left}
+.login .logo{width:56px;height:56px;border-radius:16px;margin-bottom:18px}
+.pwbox{position:relative;margin-top:6px}.pwbox input{padding-right:52px}
 .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:40px;border:0;background:none;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px}
-.eye:hover{color:var(--ink)}.eye:focus-visible{outline:3px solid var(--mark)}.eye[aria-pressed=false] .slash{display:none}
-.calwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
-.cal{display:grid;grid-template-columns:52px repeat(var(--n),minmax(0,1fr));min-width:100%}.cal.v-week{min-width:720px}
-.ch{position:sticky;top:0;z-index:3;background:var(--panel);border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);padding:8px 4px;font:600 14px "Source Sans 3",sans-serif;color:var(--ink);text-align:center;min-height:44px;cursor:pointer}
-.ch:first-child{border-left:0;cursor:default}.ch.today{color:var(--brand)}.ch.today b{background:var(--brand);color:var(--brandInk);border-radius:99px;padding:1px 7px}
-.hrs{position:relative}.hrs span{position:absolute;right:6px;transform:translateY(-50%);font-size:12px;color:var(--mute)}.hrs span:first-child{transform:none}
-.dcol{position:relative;border-left:1px solid var(--line);cursor:copy;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--line) 45%,transparent) 1px,transparent 1px);background-size:100% 64px,100% 32px}
-.dcol.today{background-color:color-mix(in srgb,var(--mark) 12%,transparent)}.dcol.drop,.mcell.drop{outline:3px solid var(--mark);outline-offset:-3px}
-.now{position:absolute;left:0;right:0;height:2px;background:var(--bad);z-index:2}
-.ev{position:absolute;border-radius:7px;padding:2px 6px;font-size:13px;line-height:1.25;overflow:hidden;background:color-mix(in srgb,var(--brand) 16%,var(--bg));border-left:4px solid var(--brand);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;z-index:1}
-.ev span{color:var(--mute);font-size:12px}.ev.honore{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,var(--bg))}
-.ev.absent{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--bg))}.ev.annule{opacity:.55;text-decoration:line-through}
-.ev.dragging{z-index:6;box-shadow:0 10px 24px #0005;cursor:grabbing;opacity:.95}
+.eye:hover{color:var(--ink)}.eye[aria-pressed=false] .slash{display:none}
+/* ---- agenda ---- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar .when{font-size:17px;font-weight:800}
+.calwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:14px}
+.cal{display:grid;grid-template-columns:56px repeat(var(--n),minmax(0,1fr));min-width:100%}.cal.v-week{min-width:760px}
+.ch{position:sticky;top:0;z-index:3;background:var(--surface);border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);padding:10px 4px;font:600 13.5px "Plus Jakarta Sans",sans-serif;color:var(--mute);text-align:center;min-height:52px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.ch b{font-size:17px;color:var(--ink)}
+.ch:first-child{border-left:0;cursor:default}.ch.today{color:var(--brand)}.ch.today b{background:var(--brand);color:var(--brandInk);border-radius:99px;padding:2px 8px}
+.ch .chip{padding:2px 7px;font-size:11.5px}
+.hrs{position:relative}.hrs span{position:absolute;right:8px;transform:translateY(-50%);font-size:11.5px;color:var(--mute);font-weight:600}.hrs span:first-child{transform:none}
+.dcol{position:relative;border-left:1px solid var(--line);cursor:copy;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--line) 50%,transparent) 1px,transparent 1px);background-size:100% 64px,100% 32px}
+.dcol:hover{background-color:color-mix(in srgb,var(--brand2) 35%,transparent)}
+.dcol.today{background-color:color-mix(in srgb,var(--brand2) 45%,transparent)}.dcol.drop,.mcell.drop{outline:2px solid var(--brand);outline-offset:-2px;background-color:var(--brand2)}
+.now{position:absolute;left:0;right:0;height:2px;background:var(--bad);z-index:2}.now::before{content:"";position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--bad)}
+.ev{position:absolute;border-radius:9px;padding:4px 7px;font-size:12.5px;line-height:1.25;overflow:hidden;--c:var(--brand);background:color-mix(in srgb,var(--c) 14%,var(--surface));border-left:3px solid var(--c);color:var(--ink);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;z-index:1;box-shadow:0 1px 2px rgb(0 0 0/.06)}
+.ev:hover{box-shadow:0 4px 12px rgb(0 0 0/.12)}
+.ev b.t{color:var(--c)}.ev span{color:var(--mute);font-size:11.5px}
+.ev.honore::after{content:"✓";position:absolute;top:3px;right:6px;font-weight:800;color:var(--ok)}
+.ev.absent{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bad) 10%,var(--surface)) 0 6px,var(--surface) 6px 12px);border-left-color:var(--bad)}
+.ev.annule{opacity:.5;text-decoration:line-through}
+.ev.dragging{z-index:6;box-shadow:var(--sh2);cursor:grabbing;opacity:.96}
 .ev .rs{position:absolute;left:0;right:0;bottom:0;height:9px;cursor:ns-resize}
-.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.mh{background:var(--panel);padding:8px;font-weight:700;font-size:14px;text-align:center}
-.mcell{min-height:112px;border-top:1px solid var(--line);border-left:1px solid var(--line);padding:4px;cursor:pointer}.mcell:nth-child(7n+1){border-left:0}
-.mcell.out{background:var(--panel);color:var(--mute)}.dn{display:inline-block;font-weight:700;font-size:14px;padding:0 6px}.mcell.today .dn{background:var(--brand);color:var(--brandInk);border-radius:99px}
-.ev.m{position:relative;margin-top:3px;white-space:nowrap;text-overflow:ellipsis}
-@media(max-width:600px){.mcell{min-height:76px;padding:2px}.ev.m{font-size:11px;padding:1px 3px;border-left-width:3px}.ev.m b{display:none}}
-.note{font-size:14px;color:var(--mute)}
-.banner{background:var(--mark);color:#222;padding:8px max(4vw,14px);font-size:14px}
-@media(prefers-reduced-motion:reduce){#toast{transition:none}}
-@media(max-width:600px){table{font-size:13px}.slot{grid-template-columns:58px minmax(0,1fr)}.slot .act{grid-column:1/-1}.slot .h{font-size:18px}
-.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute);font-weight:600}.stack td:empty{display:none}}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mh{background:var(--panel);padding:10px;font-weight:700;font-size:12.5px;color:var(--mute);text-align:center}
+.mcell{min-height:116px;border-top:1px solid var(--line);border-left:1px solid var(--line);padding:6px;cursor:pointer;background:var(--surface)}.mcell:nth-child(7n+1){border-left:0}
+.mcell:hover{background:color-mix(in srgb,var(--brand2) 35%,var(--surface))}
+.mcell.out{background:var(--panel);color:var(--mute)}.dn{display:inline-grid;place-items:center;min-width:26px;height:26px;font-weight:700;font-size:13px;border-radius:99px}.mcell.today .dn{background:var(--brand);color:var(--brandInk)}
+.ev.m{position:relative;margin-top:4px;white-space:nowrap;text-overflow:ellipsis;padding:3px 7px}
+.hint{display:flex;gap:8px;align-items:center;margin:12px 2px 0}
+.banner{background:var(--mark);color:#222;padding:8px 16px;font-size:14px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ---- téléphone et tablette ---- */
+@media(max-width:900px){
+ .app{grid-template-columns:1fr}
+ .side{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;z-index:30;flex-direction:row;padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);gap:0;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(12px)}
+ .side .brand,.sidecard{display:none}
+ #nav{flex-direction:row;flex:1;justify-content:space-around}
+ #nav a{flex-direction:column;gap:3px;font-size:11px;padding:6px 4px;flex:1;justify-content:center;border-radius:10px;min-height:52px}
+ .tb-brand{display:flex}
+ main{padding-bottom:100px}
+ .dash{grid-template-columns:1fr}
+ #newTop .lbl,#nav .long{display:none}#nav .short{display:inline}
+}
+@media(max-width:600px){table{font-size:13.5px}.slot{grid-template-columns:52px auto minmax(0,1fr)}.slot .act{grid-column:1/-1;justify-content:flex-start}.slot .h{font-size:16px}
+ .mcell{min-height:78px;padding:3px}.ev.m{font-size:11px;padding:2px 4px;border-left-width:3px}.ev.m b{display:none}
+ .pagehead h2{font-size:24px}.kpi{padding:14px}.kpi b{font-size:24px}.pill{max-width:40vw}
+ .stack thead{display:none}.stack tr{display:grid;padding-block:12px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute);font-weight:600;font-size:12.5px}.stack td:empty{display:none}}
 </style>
 <script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -117,18 +213,30 @@ dialog .foot{position:sticky;bottom:0;background:var(--bg);padding:12px 20px;bor
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-<header>
-  <div class="top"><h1>Carnet d'exploration fonctionnelle</h1><div class="row"><small id="sync">Connexion…</small><button class="btn s" id="out" hidden>Déconnexion</button></div></div>
-  <nav id="nav">
-    <a href="#accueil" data-v="accueil">Aujourd'hui</a>
-    <a href="#rendez-vous" data-v="rendez-vous">Rendez-vous</a>
-    <a href="#registre" data-v="registre">Registre</a>
-    <a href="#archives" data-v="archives">Archives</a>
-    <a href="#rapports" data-v="rapports">Rapports</a>
+<div class="app">
+<aside class="side">
+  <div class="brand"><span class="logo" data-ic="wave"></span><div><b>Exploration fonctionnelle</b><small>EEG · Sommeil · EFR</small></div></div>
+  <nav id="nav" aria-label="Navigation principale">
+    <a href="#accueil" data-v="accueil"><span data-ic="home"></span><span class="long">Tableau de bord</span><span class="short">Accueil</span></a>
+    <a href="#rendez-vous" data-v="rendez-vous"><span data-ic="cal"></span><span>Agenda</span></a>
+    <a href="#registre" data-v="registre"><span data-ic="list"></span><span>Registre</span></a>
+    <a href="#archives" data-v="archives"><span data-ic="archive"></span><span>Archives</span></a>
+    <a href="#rapports" data-v="rapports"><span data-ic="chart"></span><span>Rapports</span></a>
   </nav>
-</header>
-<div id="banner" class="banner" hidden></div>
-<main id="main"></main>
+  <div class="sidecard"><b>Service d'exploration fonctionnelle</b>Rendez-vous, registre, comptes rendus et rapports au même endroit.</div>
+</aside>
+<div class="content">
+  <header class="topbar">
+    <div class="tb-brand"><span class="logo" data-ic="wave"></span><span>Exploration</span></div>
+    <span class="sp"></span>
+    <span class="pill"><i></i><span id="sync">Connexion…</span></span>
+    <button class="btn p" id="newTop" data-a="rdv" aria-label="Nouveau rendez-vous"><span data-ic="plus"></span><span class="lbl">Nouveau rendez-vous</span></button>
+    <button class="btn icon ghost" id="out" hidden title="Déconnexion" aria-label="Déconnexion"><span data-ic="out"></span></button>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="main"></main>
+</div>
+</div>
 
 <dialog id="dlg"></dialog>
 <div id="toast" role="status"></div>
@@ -176,6 +284,29 @@ function finance(L){
 }
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)};
 const opt=(list,val,empty)=>(empty!=null?`<option value="">${esc(empty)}</option>`:'')+list.map(v=>{const[k,l]=Array.isArray(v)?v:[v,v];return `<option value="${esc(k)}"${String(k)===String(val??'')?' selected':''}>${esc(l)}</option>`}).join('');
+
+/* ---------- Icônes ---------- */
+const P={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',cal:'<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+list:'<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',archive:'<rect x="3" y="3.5" width="18" height="5" rx="1.5"/><path d="M5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M10 12.5h4"/>',
+chart:'<path d="M3 21h18"/><rect x="5" y="11" width="3.5" height="7" rx="1"/><rect x="10.25" y="5" width="3.5" height="13" rx="1"/><rect x="15.5" y="8.5" width="3.5" height="9.5" rx="1"/>',wave:'<path d="M2 12h3.5l2-5 3 10 3-14 3 13 2-4H22"/>',
+moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',wind:'<path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h7"/>',file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/>',
+users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6 6 0 0 1 3.5 5.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',
+cam:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',clip:'<path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',
+money:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',steth:'<path d="M5 3v6a5 5 0 0 0 10 0V3M10 14v2a5 5 0 0 0 10 0v-3"/><circle cx="20" cy="11" r="2"/>',note:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',hand:'<path d="M7 11V6a2 2 0 0 1 4 0v5M11 10V4a2 2 0 0 1 4 0v6M15 10V6a2 2 0 0 1 4 0v8a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.5L3 14a2 2 0 0 1 3.4-2z"/>'};
+const ic=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
+document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic,e.classList.contains('logo')?22:20));
+const AC=a=>'a'+((ACTES.indexOf(a)+1)||0);
+const AICON={EEG:'wave','EEG de sommeil':'moon',EFR:'wind'};
+const initials=n=>(n||'?').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';
+const av=n=>{let h=0;for(const c of n||'')h=(h*31+c.charCodeAt(0))%6;return `<span class="av v${h}" aria-hidden="true">${esc(initials(n))}</span>`};
+const tag=a=>a?`<span class="tag ${AC(a)}">${esc(a)}</span>`:'';
+const stChip=r=>{const[st,cl]=STATUTS[r.statut||'prevu'];return `<span class="chip ${cl}">${st}</span>`};
+const pageHead=(t,sub,act)=>`<div class="pagehead"><div><h2>${t}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div><div class="row">${act||''}</div></div>`;
+const emptyBox=(t,i)=>`<div class="empty">${ic(i||'file',28)}${t}</div>`;
+const provL=p=>p==='Ext'?'Externe':p==='Int'?'Interne':'';
 
 /* ---------- Stockage : base de l'artefact, sinon navigateur ---------- */
 const S={exams:[],rdvs:[],mode:'local',db:null,assets:null,dl:null};
@@ -232,8 +363,8 @@ async function pull(){
     $('#sync').textContent='Enregistré sur le serveur · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});render()}
   catch(e){$('#sync').textContent='Hors ligne : données non à jour'}
 }
-function vLogin(){return `<form id="fLogin" style="max-width:420px;margin:8vh auto"><h2>Connexion</h2><p class="note">Les données des patients sont protégées. Entrez le mot de passe du service.</p>
-  <label for="pw">Mot de passe</label><div class="pwbox"><input id="pw" type="password" autocomplete="current-password" required><button type="button" id="pwEye" class="eye" aria-label="Afficher le mot de passe" aria-pressed="false" title="Afficher le mot de passe"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line class="slash" x1="3" y1="3" x2="21" y2="21"/></svg></button></div><p id="lErr" style="color:var(--bad)"></p><button class="btn p">Se connecter</button></form>`}
+function vLogin(){return `<form id="fLogin" class="panel login"><span class="logo">${ic('wave',28)}</span><h2>Connexion</h2><p class="note" style="margin:8px 0 18px">Service d’exploration fonctionnelle. Les données des patients sont protégées : entrez le mot de passe du service.</p>
+  <label for="pw">Mot de passe</label><div class="pwbox"><input id="pw" type="password" autocomplete="current-password" required><button type="button" id="pwEye" class="eye" aria-label="Afficher le mot de passe" aria-pressed="false" title="Afficher le mot de passe"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line class="slash" x1="3" y1="3" x2="21" y2="21"/></svg></button></div><p id="lErr" style="color:var(--bad);min-height:1.4em;margin:8px 0"></p><button class="btn p" style="width:100%">Se connecter</button></form>`}
 document.addEventListener('click',ev=>{const b=ev.target.closest('#pwEye');if(!b)return;const i=$('#pw'),show=i.type==='password';
   i.type=show?'text':'password';b.setAttribute('aria-pressed',String(show));const t=show?'Masquer le mot de passe':'Afficher le mot de passe';b.setAttribute('aria-label',t);b.title=t;i.focus()});
 document.addEventListener('submit',async ev=>{if(ev.target.id!=='fLogin')return;ev.preventDefault();
@@ -333,7 +464,7 @@ function repPDF(r){
     if(y>doc.internal.pageSize.getHeight()-30){doc.addPage();y=16}
     doc.text(s.h,14,y+4);
     doc.autoTable({startY:y+6,head:[s.head],body:s.body.map(r=>r.map(String)),foot:s.foot?[s.foot.map(String)]:undefined,theme:'grid',
-      styles:{fontSize:8.5,cellPadding:1.6},headStyles:{fillColor:[15,76,92]},footStyles:{fillColor:[246,232,90],textColor:20},
+      styles:{fontSize:8.5,cellPadding:1.6},headStyles:{fillColor:[11,110,119]},footStyles:{fillColor:[246,232,90],textColor:20},
       columnStyles:s.wide?{9:{cellWidth:55}}:{},didParseCell:d=>{if(!s.wide&&d.column.index>0)d.cell.styles.halign='right'}});
     y=doc.lastAutoTable.finalY+8;
   }
@@ -374,20 +505,31 @@ async function fichePDF(e){
 const V={view:'accueil',rdvDay:today(),reg:{m:String(new Date().getMonth()),y:String(new Date().getFullYear()),acte:'',q:''},arch:{q:'',y:String(new Date().getFullYear())},
   rep:{kind:'mensuel',m:new Date().getMonth(),y:new Date().getFullYear(),a:today().slice(0,8)+'01',b:today()}};
 
-function slotHTML(r){
-  const[st,cl]=STATUTS[r.statut||'prevu'];
-  return `<div class="slot"><div class="h">${esc(r.heure||'--:--')}</div><div><div class="who">${esc(r.nom)}</div><div class="meta">${esc([r.acte,r.prov,r.pec,r.tel].filter(Boolean).join(' · '))}${r.motif?' — '+esc(r.motif):''}</div></div>
-  <div class="act row"><span class="chip ${cl}">${st}</span>${(r.statut||'prevu')==='prevu'?`<button class="btn s p" data-a="arrive" data-id="${esc(r.id)}">Arrivé · saisir l'examen</button><button class="btn s" data-a="absent" data-id="${esc(r.id)}">Absent</button>`:''}<button class="btn s" data-a="rdv" data-id="${esc(r.id)}">Modifier</button></div></div>`;
+function slotHTML(r){const st=r.statut||'prevu';
+  return `<div class="slot"><div class="h">${esc(r.heure||'--:--')}<small>${+r.duree||30} min</small></div>${av(r.nom)}<div><div class="who">${esc(r.nom)}</div><div class="meta">${tag(r.acte)}${esc([provL(r.prov),r.pec,r.tel].filter(Boolean).join(' · '))}</div></div>
+  <div class="act">${stChip(r)}${st==='prevu'?`<button class="btn s p" data-a="arrive" data-id="${esc(r.id)}">${ic('check',16)}Arrivé</button><button class="btn s" data-a="absent" data-id="${esc(r.id)}">Absent</button>`:''}<button class="btn s ghost" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div></div>`;
 }
 function vAccueil(){
-  const t=today(),d=new Date(),y=d.getFullYear(),m=d.getMonth();
+  const t=today(),d=new Date(),y=d.getFullYear(),m=d.getMonth(),pm=m?m-1:11,py=m?y:y-1;
   const R=S.rdvs.filter(r=>r.date===t).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
-  const M=S.exams.filter(e=>inMonth(e,y,m));
-  const next=S.rdvs.filter(r=>r.date>t&&(r.statut||'prevu')==='prevu').sort((a,b)=>(a.date+a.heure).localeCompare(b.date+b.heure)).slice(0,5);
-  return `<div class="row"><h2>${esc(longDate(t).replace(/^./,c=>c.toUpperCase()))}</h2><span class="sp"></span><button class="btn p" data-a="rdv">+ Rendez-vous</button><button class="btn" data-a="exam">+ Examen</button></div>
-  <div class="kpis">${[['RDV aujourd’hui',R.length],['Examens en '+MOIS[m].toLowerCase(),M.length],...ACTES.map(a=>[a,count(M,e=>e.acte===a)]),['CR archivés ce mois',count(M,e=>(e.pieces||[]).length||e.cr)]].map(([l,v])=>`<div class="kpi"><span>${esc(l)}</span><b>${v}</b></div>`).join('')}</div>
-  <h3>Agenda du jour</h3>${R.length?R.map(slotHTML).join(''):'<div class="empty">Aucun rendez-vous aujourd’hui.</div>'}
-  <h3 style="margin-top:28px">Prochains rendez-vous</h3>${next.length?next.map(r=>`<div class="slot"><div class="h">${esc(frDate(r.date).slice(0,5))}</div><div><div class="who">${esc(r.nom)}</div><div class="meta">${esc(r.heure||'')} · ${esc(r.acte||'')}</div></div><div class="act"><button class="btn s" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div></div>`).join(''):'<div class="empty">Rien de prévu pour la suite.</div>'}`;
+  const M=S.exams.filter(e=>inMonth(e,y,m)),Pv=S.exams.filter(e=>inMonth(e,py,pm));
+  const next=S.rdvs.filter(r=>r.date>t&&(r.statut||'prevu')==='prevu').sort((a,b)=>(a.date+a.heure).localeCompare(b.date+b.heure)).slice(0,6);
+  const delta=(a,b)=>{const x=a-b;return `<span class="delta ${x>0?'up':x<0?'down':''}">${x>0?'▲ +'+x:x<0?'▼ '+x:'='} vs ${MOIS[pm].toLowerCase()}</span>`};
+  const K=[['cal','Rendez-vous du jour',R.length,`<span class="delta">${count(R,r=>r.statut==='honore')} honoré(s) · ${count(R,r=>(r.statut||'prevu')==='prevu')} à venir</span>`,''],
+    ['users','Examens ce mois',M.length,delta(M.length,Pv.length),''],
+    ...ACTES.map(a=>[AICON[a],a,count(M,e=>e.acte===a),delta(count(M,e=>e.acte===a),count(Pv,e=>e.acte===a)),AC(a)]),
+    ['file','Comptes rendus archivés',count(M,e=>(e.pieces||[]).length||e.cr),'<span class="delta">ce mois</span>','']];
+  const months=[...Array(6)].map((_,i)=>{const x=new Date(y,m-5+i,1);return{y:x.getFullYear(),m:x.getMonth()}});
+  const data=months.map(o=>{const L=S.exams.filter(e=>inMonth(e,o.y,o.m));return{...o,n:L.length,parts:ACTES.map(a=>count(L,e=>e.acte===a)),other:count(L,e=>!ACTES.includes(e.acte))}});
+  const mx=Math.max(1,...data.map(x=>x.n));
+  const chart=`<div class="bars">${data.map(x=>`<div class="bar"><div class="colb"><div class="stackbar" style="height:${x.n/mx*100}%" title="${x.n} examen(s)">${x.parts.map((c,i)=>c?`<i class="a${i+1}" style="flex:${c}"></i>`:'').join('')}${x.other?`<i class="a0" style="flex:${x.other}"></i>`:''}</div></div><b>${x.n}</b><span>${MOIS[x.m].slice(0,3)}.</span></div>`).join('')}</div>
+    <div class="legend">${ACTES.map(a=>`<span><i class="${AC(a)}"></i>${esc(a)}</span>`).join('')}</div>`;
+  const hello=d.getHours()<12?'Bonjour':d.getHours()<18?'Bon après-midi':'Bonsoir';
+  return pageHead(hello,esc(longDate(t).replace(/^./,c=>c.toUpperCase()))+' · voici l’activité du service',`<button class="btn" data-a="exam">${ic('plus',18)}Nouvel examen</button>`)+
+  `<div class="kpis">${K.map(([i,l,v,dl,c])=>`<div class="kpi ${c}"><div class="kic">${ic(i,22)}</div><b>${v}</b><span>${esc(l)}</span>${dl}</div>`).join('')}</div>
+  <div class="dash"><section class="panel"><div class="ph"><h3>Agenda du jour</h3><a class="btn s ghost" href="#rendez-vous">Voir l’agenda ${ic('right',16)}</a></div>${R.length?R.map(slotHTML).join(''):emptyBox('Aucun rendez-vous aujourd’hui.','cal')}</section>
+  <div class="col"><section class="panel"><div class="ph"><h3>Activité sur 6 mois</h3></div>${chart}</section>
+  <section class="panel"><div class="ph"><h3>Prochains rendez-vous</h3></div>${next.length?next.map(r=>{const x=parse(r.date);return `<div class="mini"><div class="d"><b>${x.getDate()}</b><small>${MOIS[x.getMonth()].slice(0,4)}</small></div><div class="i"><b>${esc(r.nom)}</b><small>${esc(r.heure||'')} · ${esc(r.acte||'')}</small></div><button class="btn s ghost" data-a="rdv" data-id="${esc(r.id)}">Ouvrir</button></div>`}).join(''):emptyBox('Rien de prévu pour la suite.','clock')}</section></div></div>`;
 }
 /* ---------- Agenda (jour / semaine / mois) avec glisser-déposer ---------- */
 const PXH=64,PXM=PXH/60,JC=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
@@ -403,7 +545,7 @@ function lanes(R){ // répartit les rendez-vous qui se chevauchent côte à côt
   for(const x of L){if(x.s>=end&&grp.length)flush();grp.push(x);end=Math.max(end,x.e)}if(grp.length)flush();return out;
 }
 function evHTML(x,a){const r=x.r,top=(x.s-a)*PXM,h=Math.max(dur(r)*PXM-2,22);
-  return `<div class="ev ${esc(r.statut||'prevu')}" data-id="${esc(r.id)}" style="top:${top}px;height:${h}px;left:calc(${x.c/x.n*100}% + 2px);width:calc(${100/x.n}% - 4px)" title="${esc(r.heure+' '+r.nom)}"><b class="t">${esc(r.heure)}</b> ${esc(r.nom)}${h>40?`<br><span>${esc([r.acte,r.pec].filter(Boolean).join(' · '))}</span>`:''}<i class="rs" aria-hidden="true"></i></div>`}
+  return `<div class="ev ${esc(r.statut||'prevu')} ${AC(r.acte)}" data-id="${esc(r.id)}" style="top:${top}px;height:${h}px;left:calc(${x.c/x.n*100}% + 2px);width:calc(${100/x.n}% - 4px)" title="${esc(r.heure+' '+r.nom)}"><b class="t">${esc(r.heure)}</b> ${esc(r.nom)}${h>40?`<br><span>${esc([r.acte,r.pec].filter(Boolean).join(' · '))}</span>`:''}<i class="rs" aria-hidden="true"></i></div>`}
 function vRdv(){
   const v=V.cal||(matchMedia('(max-width:700px)').matches?'day':'week');V.cal=v;
   const d=V.rdvDay,t=today();let title,body;
@@ -411,7 +553,7 @@ function vRdv(){
     const f=parse(d);f.setDate(1);const first=monday(iso(f)),m=parse(d).getMonth();
     title=MOIS[m]+' '+parse(d).getFullYear();
     body=`<div class="mgrid">${JC.map(j=>`<div class="mh">${j}</div>`).join('')}${[...Array(42)].map((_,i)=>{const dd=addDays(first,i),R=S.rdvs.filter(r=>r.date===dd).sort((a,b)=>(a.heure||'').localeCompare(b.heure||''));
-      return `<div class="mcell${parse(dd).getMonth()!==m?' out':''}${dd===t?' today':''}" data-a="mday" data-d="${dd}"><span class="dn">${parse(dd).getDate()}</span>${R.slice(0,4).map(r=>`<div class="ev m ${esc(r.statut||'prevu')}" data-id="${esc(r.id)}"><b class="t">${esc(r.heure||'')}</b> ${esc(r.nom)}</div>`).join('')}${R.length>4?`<div class="note">+${R.length-4} autres</div>`:''}</div>`}).join('')}</div>`;
+      return `<div class="mcell${parse(dd).getMonth()!==m?' out':''}${dd===t?' today':''}" data-a="mday" data-d="${dd}"><span class="dn">${parse(dd).getDate()}</span>${R.slice(0,4).map(r=>`<div class="ev m ${esc(r.statut||'prevu')} ${AC(r.acte)}" data-id="${esc(r.id)}"><b class="t">${esc(r.heure||'')}</b> ${esc(r.nom)}</div>`).join('')}${R.length>4?`<div class="note">+${R.length-4} autres</div>`:''}</div>`}).join('')}</div>`;
   }else{
     const days=v==='day'?[d]:[...Array(6)].map((_,i)=>addDays(monday(d),i));
     const[a,b]=calRange(),H=(b-a)*PXM;
@@ -423,12 +565,12 @@ function vRdv(){
       ${days.map(dd=>`<div class="dcol${dd===t?' today':''}" data-a="newat" data-d="${dd}" style="height:${H}px">${dd===t&&nm>=a&&nm<=b?`<div class="now" style="top:${(nm-a)*PXM}px"></div>`:''}${lanes(S.rdvs.filter(r=>r.date===dd&&r.heure)).map(x=>evHTML(x,a)).join('')}</div>`).join('')}
     </div></div>`;
   }
-  return `<div class="row"><h2>Rendez-vous</h2><span class="sp"></span><button class="btn p" data-a="rdv">+ Nouveau rendez-vous</button></div>
-  <div class="row" style="margin:14px 0"><div class="seg">${[['day','Jour'],['week','Semaine'],['month','Mois']].map(([k,l])=>`<button data-a="cv" data-k="${k}" class="${v===k?'on':''}">${l}</button>`).join('')}</div>
-  <button class="btn" data-a="wk" data-d="-1" aria-label="Précédent">‹</button><button class="btn" data-a="wk" data-d="0">Aujourd’hui</button><button class="btn" data-a="wk" data-d="1" aria-label="Suivant">›</button>
-  <input type="date" id="rdvDay" value="${esc(d)}" aria-label="Aller à la date" style="width:auto"><b style="font-size:18px">${esc(title)}</b></div>
-  <p class="note" style="margin:0 0 8px">Cliquez sur un créneau libre pour créer un rendez-vous, sur un rendez-vous pour le modifier ; faites-le glisser pour le déplacer, tirez son bord bas pour changer la durée.</p>
-  ${body}`;
+  return pageHead('Agenda',`${S.rdvs.filter(r=>r.date>=today()&&(r.statut||'prevu')==='prevu').length} rendez-vous à venir`,'')+`<section class="panel">
+  <div class="toolbar"><div class="seg">${[['day','Jour'],['week','Semaine'],['month','Mois']].map(([k,l])=>`<button data-a="cv" data-k="${k}" class="${v===k?'on':''}">${l}</button>`).join('')}</div>
+  <div class="row" style="gap:6px"><button class="btn icon" data-a="wk" data-d="-1" aria-label="Précédent">${ic('left',18)}</button><button class="btn" data-a="wk" data-d="0">Aujourd’hui</button><button class="btn icon" data-a="wk" data-d="1" aria-label="Suivant">${ic('right',18)}</button></div>
+  <span class="when">${esc(title)}</span><span class="sp"></span><input type="date" id="rdvDay" value="${esc(d)}" aria-label="Aller à la date" style="width:auto"></div>
+  ${body}
+  <p class="note hint">${ic('hand',18)}Cliquez sur un créneau libre pour créer, sur un rendez-vous pour le modifier. Glissez-le pour le déplacer ; tirez son bord bas pour changer la durée.</p></section>`;
 }
 /* Glisser-déposer (souris et doigt) */
 let drag=null;
@@ -462,33 +604,32 @@ function regList(){
 function years(){const s=new Set([...S.exams,...S.rdvs].map(e=>e.date.slice(0,4)));s.add(String(new Date().getFullYear()));return[...s].sort().reverse()}
 function vRegistre(){
   const L=regList(),f=V.reg;
-  return `<div class="row"><h2>Registre des examens</h2><span class="sp"></span><button class="btn" data-a="regxlsx">Exporter Excel</button><button class="btn p" data-a="exam">+ Nouvel examen</button></div>
-  <div class="grid" style="margin:16px 0"><label>Année<select id="fY">${opt(years(),f.y)}</select></label><label>Mois<select id="fM">${opt(MOIS.map((n,i)=>[i,n]),f.m,'Toute l’année')}</select></label><label>Acte<select id="fA">${opt(ACTES,f.acte,'Tous')}</select></label><label>Rechercher<input id="fQ" type="search" value="${esc(f.q)}" placeholder="Nom, diagnostic…"></label></div>
-  <div class="note">${L.length} examen(s) · Hommes ${count(L,e=>e.sexe==='H')} · Femmes ${count(L,e=>e.sexe==='F')} · Externes ${count(L,e=>e.prov==='Ext')} · Internes ${count(L,e=>e.prov==='Int')}</div>
-  ${L.length?`<div class="scroll" style="margin-top:10px"><table class="stack"><thead><tr><th>N°</th><th>Date</th><th>Prénom et nom</th><th>Sexe/âge</th><th>Prov.</th><th>PAF / Autres</th><th>Montant</th><th>Acte</th><th>Diagnostic</th><th>CR</th></tr></thead><tbody>
-  ${L.map(e=>`<tr class="click" data-a="exam" data-id="${esc(e.id)}"><td>${e._n}</td><td style="white-space:nowrap">${esc(frDate(e.date))}</td><td><b>${esc(e.nom)}</b></td><td>${esc([e.sexe,e.age].filter(Boolean).join(' · '))}</td><td>${esc(e.prov||'')}</td><td>${esc(e.pec||'')}</td><td style="white-space:nowrap">${esc(payLabel(e))}</td><td>${esc(e.acte||'')}</td><td>${esc(e.diag||'')}</td><td>${(e.pieces||[]).length?'📎 '+e.pieces.length:(e.cr?'texte':'')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Aucun examen pour ces filtres. Ajoutez le premier avec « Nouvel examen ».</div>'}`;
+  return pageHead('Registre des examens',`${L.length} examen(s) pour la sélection`,`<button class="btn" data-a="regxlsx">${ic('dl',18)}Exporter Excel</button><button class="btn p" data-a="exam">${ic('plus',18)}Nouvel examen</button>`)+`<section class="panel">
+  <div class="filters"><label>Année<select id="fY">${opt(years(),f.y)}</select></label><label>Mois<select id="fM">${opt(MOIS.map((n,i)=>[i,n]),f.m,'Toute l’année')}</select></label><label>Acte<select id="fA">${opt(ACTES,f.acte,'Tous')}</select></label><label>Rechercher<input id="fQ" type="search" value="${esc(f.q)}" placeholder="Nom, diagnostic…"></label></div>
+  <div class="stats"><span class="chip">${count(L,e=>e.sexe==='H')} hommes</span><span class="chip">${count(L,e=>e.sexe==='F')} femmes</span><span class="chip">${count(L,e=>e.prov==='Ext')} externes</span><span class="chip">${count(L,e=>e.prov==='Int')} internes</span>${ACTES.map(a=>`<span class="tag ${AC(a)}">${count(L,e=>e.acte===a)} ${esc(a)}</span>`).join('')}</div>
+  ${L.length?`<div class="scroll"><table class="stack"><thead><tr><th>N°</th><th>Date</th><th>Patient</th><th>Prov.</th><th>Prise en charge</th><th>Acte</th><th>Diagnostic</th><th>CR</th></tr></thead><tbody>
+  ${L.map(e=>`<tr class="click" data-a="exam" data-id="${esc(e.id)}"><td><b>${e._n}</b></td><td style="white-space:nowrap">${esc(frDate(e.date))}</td><td><div class="pat">${av(e.nom)}<div><b>${esc(e.nom)}</b><small>${esc([e.sexe==='H'?'Homme':e.sexe==='F'?'Femme':'',e.age?e.age+' ans':''].filter(Boolean).join(' · '))}</small></div></div></td><td>${esc(provL(e.prov))}</td><td>${esc(e.pec||'')}${payLabel(e)?`<small class="note" style="display:block;white-space:nowrap">${esc(payLabel(e))}</small>`:''}</td><td>${tag(e.acte)}</td><td>${esc(e.diag||'')}</td><td>${(e.pieces||[]).length?`<span class="chip">${ic('clip',14)}${e.pieces.length}</span>`:(e.cr?'<span class="chip">texte</span>':'')}</td></tr>`).join('')}</tbody></table></div>`:emptyBox('Aucun examen pour ces filtres. Ajoutez le premier avec « Nouvel examen ».','list')}</section>`;
 }
 function vArchives(){
   const q=V.arch.q.trim().toLowerCase();
   const items=numbered().filter(e=>e.date.startsWith(V.arch.y+'-')&&((e.pieces||[]).length||e.cr)&&(!q||[e.nom,e.diag,e.acte,e.cr].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
-  return `<div class="row"><h2>Archives des comptes rendus</h2><span class="sp"></span><button class="btn p" data-a="exam">+ Archiver un compte rendu</button></div>
-  <p class="note">Chaque compte rendu est rattaché à l’examen du registre : photo prise au téléphone, scan PDF ou texte saisi.</p>
-  <div class="grid" style="max-width:640px"><label>Année<select id="aY">${opt(years(),V.arch.y)}</select></label><label>Rechercher<input id="aQ" type="search" value="${esc(V.arch.q)}" placeholder="Patient, acte, conclusion…"></label></div>
+  return pageHead('Archives des comptes rendus','Photo prise au téléphone, scan PDF ou conclusion saisie, rattachés à chaque examen',`<button class="btn p" data-a="exam">${ic('cam',18)}Archiver un compte rendu</button>`)+`<section class="panel">
+  <div class="filters" style="max-width:640px"><label>Année<select id="aY">${opt(years(),V.arch.y)}</select></label><label>Rechercher<input id="aQ" type="search" value="${esc(V.arch.q)}" placeholder="Patient, acte, conclusion…"></label></div>
   ${items.length?`<div class="gal">${items.map(e=>{const p=(e.pieces||[]).find(isImg);const u=p&&safeUrl(p.url);
-    return `<button class="card" data-a="exam" data-id="${esc(e.id)}"><div class="th">${u?`<img src="${esc(u)}" alt="" loading="lazy">`:((e.pieces||[]).length?'PDF':'CR')}</div><div class="c"><b>${esc(e.nom)}</b><br>${esc(frDate(e.date))} · ${esc(e.acte||'')}<br><span class="note">${(e.pieces||[]).length} pièce(s)</span></div></button>`}).join('')}</div>`:'<div class="empty">Aucun compte rendu archivé pour ces critères.</div>'}`;
+    return `<button class="card" data-a="exam" data-id="${esc(e.id)}"><div class="th">${u?`<img src="${esc(u)}" alt="" loading="lazy">`:ic((e.pieces||[]).length?'file':'note',34)}</div><div class="c"><div class="pat">${av(e.nom)}<div><b>${esc(e.nom)}</b><small>${esc(frDate(e.date))}</small></div></div><div class="row" style="gap:6px">${tag(e.acte)}<span class="chip">${ic('clip',13)}${(e.pieces||[]).length}</span></div></div></button>`}).join('')}</div>`:emptyBox('Aucun compte rendu archivé pour ces critères.','archive')}</section>`;
 }
 function curRep(){const r=V.rep;return r.kind==='mensuel'?repMensuel(+r.y,+r.m):r.kind==='annuel'?repAnnuel(+r.y):repSynthese(r.a,r.b)}
 function vRapports(){
   const r=V.rep;
-  return `<div class="row"><h2>Rapports</h2></div>
-  <div class="row" style="margin:16px 0"><div class="seg" role="tablist">${[['mensuel','Mensuel'],['annuel','Annuel'],['synthese','Synthèse']].map(([k,l])=>`<button data-a="rk" data-k="${k}" class="${r.kind===k?'on':''}">${l}</button>`).join('')}</div>
-  ${r.kind==='mensuel'?`<label style="width:auto">Mois<select id="rM">${opt(MOIS.map((n,i)=>[i,n]),r.m)}</select></label>`:''}
-  ${r.kind!=='synthese'?`<label style="width:auto">Année<input id="rY" type="number" value="${esc(r.y)}" style="width:110px"></label>`:`<label style="width:auto">Du<input id="rA" type="date" value="${esc(r.a)}"></label><label style="width:auto">Au<input id="rB" type="date" value="${esc(r.b)}"></label>`}
-  <span class="sp"></span><button class="btn p" data-a="pdf">Télécharger PDF</button><button class="btn" data-a="xlsx">Excel</button><button class="btn" data-a="copy">Copier</button></div>
-  ${repHTML(curRep())}`;
+  return pageHead('Rapports d’activité','Mensuel, annuel ou synthèse sur une période · export PDF et Excel',`<button class="btn" data-a="copy">${ic('copy',18)}Copier</button><button class="btn" data-a="xlsx">${ic('dl',18)}Excel</button><button class="btn p" data-a="pdf">${ic('dl',18)}Télécharger PDF</button>`)+`<section class="panel">
+  <div class="toolbar"><div class="seg" role="tablist">${[['mensuel','Mensuel'],['annuel','Annuel'],['synthese','Synthèse']].map(([k,l])=>`<button data-a="rk" data-k="${k}" class="${r.kind===k?'on':''}">${l}</button>`).join('')}</div>
+  ${r.kind==='mensuel'?`<select id="rM" aria-label="Mois" style="width:auto">${opt(MOIS.map((n,i)=>[i,n]),r.m)}</select>`:''}
+  ${r.kind!=='synthese'?`<input id="rY" type="number" aria-label="Année" value="${esc(r.y)}" style="width:110px">`:`<label class="row" style="gap:8px">Du<input id="rA" type="date" value="${esc(r.a)}" style="width:auto;margin:0"></label><label class="row" style="gap:8px">Au<input id="rB" type="date" value="${esc(r.b)}" style="width:auto;margin:0"></label>`}</div>
+  ${repHTML(curRep())}</section>`;
 }
 function render(){
   $('#out').hidden=S.mode!=='api'||!!S.needLogin;
+  document.body.classList.toggle('locked',!!S.needLogin);
   if(S.needLogin){$('#main').innerHTML=vLogin();document.querySelectorAll('#nav a').forEach(a=>a.classList.remove('on'));setTimeout(()=>$('#pw')&&$('#pw').focus());return}
   if(!V.busy){const a=document.activeElement,id=a&&a.id,pos=a&&a.selectionStart;
     $('#main').innerHTML=({accueil:vAccueil,'rendez-vous':vRdv,registre:vRegistre,archives:vArchives,rapports:vRapports}[V.view]||vAccueil)();
@@ -501,19 +642,22 @@ function route(){const h=location.hash.slice(1);V.view=['accueil','rendez-vous',
 const dlg=$('#dlg');
 function openDlg(html){dlg.innerHTML=html;dlg.showModal();V.busy=false}
 dlg.addEventListener('close',()=>render());
-function askConfirm(msg,ok){openDlg(`<div class="in"><h3>${esc(msg)}</h3></div><div class="foot"><button class="btn d" id="cfOk">Supprimer</button><button class="btn" id="cfNo">Annuler</button></div>`);$('#cfOk').onclick=()=>{dlg.close();ok()};$('#cfNo').onclick=()=>dlg.close()}
+dlg.addEventListener('click',ev=>{if(ev.target.closest('[data-x]'))dlg.close()});
+function askConfirm(msg,ok){openDlg(`<div class="in"><h3>${esc(msg)}</h3><p class="note">Cette action est définitive.</p></div><div class="foot"><button class="btn d" id="cfOk">Supprimer</button><button class="btn" id="cfNo">Annuler</button></div>`);$('#cfOk').onclick=()=>{dlg.close();ok()};$('#cfNo').onclick=()=>dlg.close()}
 
 function rdvForm(id,preset){
   const r=S.rdvs.find(x=>x.id===id)||{id:uid(),date:V.view==='rendez-vous'?V.rdvDay:today(),heure:'08:30',duree:'30',statut:'prevu',acte:'EEG',...(preset||{})};
-  openDlg(`<form id="fR"><h2>${id?'Rendez-vous':'Nouveau rendez-vous'}</h2><div class="grid" style="margin-top:14px">
-  <label>Prénom et nom *<input name="nom" required value="${esc(r.nom||'')}"></label><label>Téléphone<input name="tel" type="tel" value="${esc(r.tel||'')}"></label>
-  ${idFields(r)}
+  openDlg(`<form id="fR"><div class="dh"><div class="ttl"><small>Agenda</small><h2>${id?esc(r.nom||'Rendez-vous'):'Nouveau rendez-vous'}</h2></div><button type="button" class="x" data-x aria-label="Fermer">${ic('x',18)}</button></div>
+  <fieldset><legend>${ic('user',18)}Patient</legend><div class="g3">
+  <label class="span2">Prénom et nom *<input name="nom" required value="${esc(r.nom||'')}"></label><label>Téléphone<input name="tel" type="tel" value="${esc(r.tel||'')}"></label>
+  ${idFields(r)}</div></fieldset>
+  <fieldset><legend>${ic('cal',18)}Rendez-vous</legend><div class="g3">
   <label>Date du RDV *<input name="date" type="date" required value="${esc(r.date)}"></label><label>Heure<input name="heure" type="time" step="900" value="${esc(r.heure||'')}"></label><label>Durée<select name="duree">${opt([['15','15 min'],['30','30 min'],['45','45 min'],['60','1 h'],['90','1 h 30'],['120','2 h'],['180','3 h']],r.duree||'30')}</select></label>
-  <label>Acte<select name="acte">${opt(ACTES,r.acte,'—')}</select></label><label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],r.prov,'—')}</select></label>
-  <label>Prise en charge<select name="pec">${opt(PEC,r.pec,'—')}</select></label><label>Statut<select name="statut">${opt(Object.entries(STATUTS).map(([k,[l]])=>[k,l]),r.statut)}</select></label></div>
-  <div class="grid pecF" style="margin-top:12px">${pecFields(r)}</div>
-  <label style="margin-top:12px">Motif / service demandeur<textarea name="motif">${esc(r.motif||'')}</textarea></label></form>
-  <div class="foot"><button class="btn p" form="fR">Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button>${id&&(r.statut||'prevu')==='prevu'?'<button class="btn" type="button" id="aR">Arrivé · saisir l’examen</button>':''}<span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
+  <label>Acte<select name="acte">${opt(ACTES,r.acte,'—')}</select></label><label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],r.prov,'—')}</select></label><label>Statut<select name="statut">${opt(Object.entries(STATUTS).map(([k,[l]])=>[k,l]),r.statut)}</select></label></div>
+  <label style="margin-top:14px">Motif / service demandeur<textarea name="motif">${esc(r.motif||'')}</textarea></label></fieldset>
+  <fieldset><legend>${ic('money',18)}Prise en charge</legend><div class="g3"><label>Prise en charge<select name="pec">${opt(PEC,r.pec,'—')}</select></label>
+  <div class="pecF">${pecFields(r)}</div></div></fieldset></form>
+  <div class="foot"><button class="btn p" form="fR">${ic('check',18)}Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button>${id&&(r.statut||'prevu')==='prevu'?'<button class="btn" type="button" id="aR">Arrivé · saisir l’examen</button>':''}<span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
   if($('#aR'))$('#aR').onclick=()=>{dlg.close();examForm(null,r)};
   $('#xR').onclick=()=>dlg.close();bindPec($('#fR'),{...r});bindAge($('#fR'));
   $('#fR').onsubmit=async ev=>{ev.preventDefault();const o=cleanPay({...r,...Object.fromEntries(new FormData(ev.target))});o.nom=o.nom.trim();dlg.close();await put('rdvs',o);toast('Rendez-vous enregistré')};
@@ -524,21 +668,24 @@ function examForm(id,fromRdv){
   const e=base?{...base,pieces:[...(base.pieces||[])]}:{id:uid(),date:today(),created:new Date().toISOString(),pieces:[],acte:'EEG'};
   if(fromRdv)Object.assign(e,{sexe:fromRdv.sexe,age:fromRdv.ddn&&!fromRdv.ddnEst?String(ageFrom(fromRdv.ddn)):fromRdv.age,ddn:fromRdv.ddn,ddnEst:fromRdv.ddnEst,nom:fromRdv.nom,acte:fromRdv.acte,prov:fromRdv.prov,pec:fromRdv.pec,montant:fromRdv.montant,partEmp:fromRdv.partEmp,partPat:fromRdv.partPat,date:fromRdv.date,rdv:fromRdv.id,service:fromRdv.motif||''});
   const pj=()=>e.pieces.map((p,i)=>{const u=safeUrl(p.url);return `<div class="it"><a class="th" href="#" data-view="${i}">${isImg(p)&&u?`<img src="${esc(u)}" alt="">`:'PDF'}</a><button type="button" data-rm="${i}" aria-label="Retirer">×</button><small>${esc(p.name)}</small></div>`}).join('');
-  openDlg(`<form id="fE"><h2>${base?'Examen n° '+(numbered(),base._n)+' – '+esc(base.nom):'Nouvel examen'}</h2><div class="grid" style="margin-top:14px">
-  <label>Date de l’examen *<input name="date" type="date" required value="${esc(e.date)}"></label><label>Prénom et nom *<input name="nom" required value="${esc(e.nom||'')}"></label>
-  ${idFields(e)}
-  <label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],e.prov,'—')}</select></label><label>Service demandeur<input name="service" value="${esc(e.service||'')}"></label>
-  <label>PAF / Autres<select name="pec">${opt(PEC,e.pec,'—')}</select></label><label>Acte *<select name="acte" required>${opt(ACTES,e.acte)}</select></label></div>
-  <div class="grid pecF" style="margin-top:12px">${pecFields(e)}</div>
-  <label style="margin-top:12px">Diagnostic / indication<textarea name="diag">${esc(e.diag||'')}</textarea></label>
-  <label style="margin-top:12px">Observations<textarea name="obs">${esc(e.obs||'')}</textarea></label>
-  <label style="margin-top:12px">Compte rendu (conclusion saisie)<textarea name="cr">${esc(e.cr||'')}</textarea></label>
-  <h3 style="margin-top:16px">Compte rendu archivé</h3>
-  <div class="row" style="margin-top:8px"><label class="btn">📷 Prendre une photo<input type="file" accept="image/*" capture="environment" hidden id="pPh"></label><label class="btn">📄 Ajouter un document<input type="file" accept="image/*,application/pdf" multiple hidden id="pDoc"></label><span class="note" id="pSt"></span></div>
-  <div class="pj" id="pj">${pj()}</div></form>
-  <div class="foot"><button class="btn p" form="fE">Enregistrer</button><button class="btn" type="button" id="xE">Fermer</button>${base?'<button class="btn" type="button" id="fiche">Fiche PDF</button>':''}<span class="sp"></span>${base?'<button class="btn d" id="dE">Supprimer</button>':''}</div>`);
+  openDlg(`<form id="fE"><div class="dh"><div class="ttl"><small>${base?'Examen n° '+(numbered(),base._n):'Registre'}</small><h2>${base?esc(base.nom):'Nouvel examen'}</h2></div><button type="button" class="x" data-x aria-label="Fermer">${ic('x',18)}</button></div>
+  <fieldset><legend>${ic('user',18)}Patient</legend><div class="g3">
+  <label class="full">Prénom et nom *<input name="nom" required value="${esc(e.nom||'')}"></label>${idFields(e)}</div></fieldset>
+  <fieldset><legend>${ic('wave',18)}Examen</legend><div class="grid">
+  <label>Date de l’examen *<input name="date" type="date" required value="${esc(e.date)}"></label><label>Acte *<select name="acte" required>${opt(ACTES,e.acte)}</select></label>
+  <label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],e.prov,'—')}</select></label><label>Service demandeur<input name="service" value="${esc(e.service||'')}"></label></div></fieldset>
+  <fieldset><legend>${ic('money',18)}Prise en charge</legend><div class="g3"><label>PAF / Autres<select name="pec">${opt(PEC,e.pec,'—')}</select></label>
+  <div class="pecF">${pecFields(e)}</div></div></fieldset>
+  <fieldset><legend>${ic('steth',18)}Clinique et conclusion</legend>
+  <label>Diagnostic / indication<textarea name="diag">${esc(e.diag||'')}</textarea></label>
+  <label style="margin-top:14px">Observations<textarea name="obs">${esc(e.obs||'')}</textarea></label>
+  <label style="margin-top:14px">Compte rendu (conclusion saisie)<textarea name="cr">${esc(e.cr||'')}</textarea></label></fieldset>
+  <fieldset><legend>${ic('archive',18)}Compte rendu archivé</legend>
+  <div class="drop-zone"><label class="btn p">${ic('cam',18)}Prendre une photo<input type="file" accept="image/*" capture="environment" hidden id="pPh"></label><label class="btn">${ic('file',18)}Ajouter un document<input type="file" accept="image/*,application/pdf" multiple hidden id="pDoc"></label><span class="note" id="pSt">Photo ou PDF · réduits automatiquement</span></div>
+  <div class="pj" id="pj">${pj()}</div></fieldset></form>
+  <div class="foot"><button class="btn p" form="fE">${ic('check',18)}Enregistrer</button><button class="btn" type="button" id="xE">Fermer</button>${base?`<button class="btn" type="button" id="fiche">${ic('dl',18)}Fiche PDF</button>`:''}<span class="sp"></span>${base?'<button class="btn d" id="dE">Supprimer</button>':''}</div>`);
   const refresh=()=>{$('#pj').innerHTML=pj()};
-  const add=async files=>{for(const f of files){$('#pSt').textContent='Envoi de '+f.name+'…';try{e.pieces.push(await storeFile(f));refresh()}catch(err){toast(err.message||'Envoi impossible')}}$('#pSt').textContent=''};
+  const add=async files=>{for(const f of files){$('#pSt').textContent='Envoi de '+f.name+'…';try{e.pieces.push(await storeFile(f));refresh()}catch(err){toast(err.message||'Envoi impossible')}}$('#pSt').textContent='Photo ou PDF · réduits automatiquement'};
   $('#pPh').onchange=ev=>add([...ev.target.files]);$('#pDoc').onchange=ev=>add([...ev.target.files]);
   $('#pj').onclick=ev=>{const rm=ev.target.closest('[data-rm]'),vw=ev.target.closest('[data-view]');
     if(rm){e.pieces.splice(+rm.dataset.rm,1);refresh()}
