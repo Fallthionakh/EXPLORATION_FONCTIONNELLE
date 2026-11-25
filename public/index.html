@@ -82,6 +82,9 @@ dialog .foot{position:sticky;bottom:0;background:var(--bg);padding:12px 20px;bor
 .seg button.on{background:var(--brand);color:var(--brandInk)}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.on{opacity:1}
+.pwbox{position:relative;margin-top:4px}.pwbox input{padding-right:52px}
+.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:40px;border:0;background:none;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.eye:hover{color:var(--ink)}.eye:focus-visible{outline:3px solid var(--mark)}.eye[aria-pressed=false] .slash{display:none}
 .note{font-size:14px;color:var(--mute)}
 .banner{background:var(--mark);color:#222;padding:8px max(4vw,14px);font-size:14px}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}}
@@ -189,7 +192,9 @@ async function pull(){
   catch(e){$('#sync').textContent='Hors ligne : données non à jour'}
 }
 function vLogin(){return `<form id="fLogin" style="max-width:420px;margin:8vh auto"><h2>Connexion</h2><p class="note">Les données des patients sont protégées. Entrez le mot de passe du service.</p>
-  <label>Mot de passe<input id="pw" type="password" autocomplete="current-password" required></label><p id="lErr" style="color:var(--bad)"></p><button class="btn p">Se connecter</button></form>`}
+  <label for="pw">Mot de passe</label><div class="pwbox"><input id="pw" type="password" autocomplete="current-password" required><button type="button" id="pwEye" class="eye" aria-label="Afficher le mot de passe" aria-pressed="false" title="Afficher le mot de passe"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line class="slash" x1="3" y1="3" x2="21" y2="21"/></svg></button></div><p id="lErr" style="color:var(--bad)"></p><button class="btn p">Se connecter</button></form>`}
+document.addEventListener('click',ev=>{const b=ev.target.closest('#pwEye');if(!b)return;const i=$('#pw'),show=i.type==='password';
+  i.type=show?'text':'password';b.setAttribute('aria-pressed',String(show));const t=show?'Masquer le mot de passe':'Afficher le mot de passe';b.setAttribute('aria-label',t);b.title=t;i.focus()});
 document.addEventListener('submit',async ev=>{if(ev.target.id!=='fLogin')return;ev.preventDefault();
   const r=await api('POST','/api/login',JSON.stringify({password:$('#pw').value}));
   if(r.ok){S.needLogin=false;await pull()}else{const j=await r.json().catch(()=>({}));$('#lErr').textContent=j.error||'Connexion impossible'}});
@@ -383,6 +388,7 @@ function vRapports(){
   ${repHTML(curRep())}`;
 }
 function render(){
+  $('#out').hidden=S.mode!=='api'||!!S.needLogin;
   if(S.needLogin){$('#main').innerHTML=vLogin();document.querySelectorAll('#nav a').forEach(a=>a.classList.remove('on'));setTimeout(()=>$('#pw')&&$('#pw').focus());return}
   if(!V.busy){const a=document.activeElement,id=a&&a.id,pos=a&&a.selectionStart;
     $('#main').innerHTML=({accueil:vAccueil,'rendez-vous':vRdv,registre:vRegistre,archives:vArchives,rapports:vRapports}[V.view]||vAccueil)();
