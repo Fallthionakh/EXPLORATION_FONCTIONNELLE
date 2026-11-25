@@ -159,6 +159,11 @@ const payTotal=e=>e.pec==='PAF'?num(e.montant):num(e.partEmp)+num(e.partPat);
 const payLabel=e=>!e.pec?'':e.pec==='PAF'?(e.montant!==''&&e.montant!=null?fcfa(num(e.montant)):''):((e.partEmp||e.partPat)?'Empl. '+fcfa(num(e.partEmp))+' / Pat. '+fcfa(num(e.partPat)):'');
 function pecFields(o){const pec=o.pec,f=(n,l)=>`<label>${l}<input name="${n}" type="number" min="0" step="1" inputmode="numeric" value="${esc(o[n]??'')}" placeholder="0"></label>`;
   return !pec?'':pec==='PAF'?f('montant','Montant payé (FCFA)'):f('partEmp','Part employeur (FCFA)')+f('partPat','Part patient (FCFA)')}
+function idFields(o){return `<label>Sexe<select name="sexe">${opt([['H','Homme'],['F','Femme']],o.sexe,'—')}</select></label><label>Âge (ans)<input name="age" type="number" min="0" max="130" inputmode="numeric" value="${esc(o.age||'')}"></label><label>Date de naissance<input name="ddn" type="date" max="${today()}" value="${esc(o.ddn||'')}"><small class="note ddnE"${o.ddnEst?'':' hidden'}>Date estimée à partir de l’âge</small></label><input type="hidden" name="ddnEst" value="${o.ddnEst?'1':''}">`}
+const ageFrom=ddn=>{const b=parse(ddn),t=new Date();let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return Math.max(0,a)};
+function bindAge(form){const A=form.querySelector('[name=age]'),D=form.querySelector('[name=ddn]'),E=form.querySelector('[name=ddnEst]'),N=form.querySelector('.ddnE');
+  A.addEventListener('input',()=>{const a=parseInt(A.value,10);if(isNaN(a)||a<0||a>130){if(E.value){D.value='';}return}D.value=(new Date().getFullYear()-a)+'-01-01';E.value='1';N.hidden=false});
+  D.addEventListener('input',()=>{if(!D.value)return;A.value=ageFrom(D.value);E.value='';N.hidden=true})}
 function cleanPay(o){if(o.pec!=='PAF')delete o.montant;if(!o.pec||o.pec==='PAF'){delete o.partEmp;delete o.partPat}return o}
 function bindPec(form,o){const sel=form.querySelector('select[name=pec]'),box=form.querySelector('.pecF');
   sel.addEventListener('change',()=>{for(const i of box.querySelectorAll('input'))o[i.name]=i.value;o.pec=sel.value;box.innerHTML=pecFields(o)})}
@@ -350,7 +355,7 @@ async function fichePDF(e){
   doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Compte rendu – '+(e.acte||'Exploration fonctionnelle'),14,16);
   doc.setFont('helvetica','normal');doc.setFontSize(10);
   doc.autoTable({startY:22,theme:'plain',styles:{fontSize:10,cellPadding:1.2},columnStyles:{0:{fontStyle:'bold',cellWidth:42}},
-    body:[['Patient',e.nom||''],['Date',frDate(e.date)],['Sexe / âge',[e.sexe==='H'?'Homme':e.sexe==='F'?'Femme':'',e.age?e.age+' ans':''].filter(Boolean).join(', ')],['Provenance',[e.prov,e.service].filter(Boolean).join(' – ')],['Prise en charge',[e.pec,payLabel(e)].filter(Boolean).join(' – ')],['Indication / diagnostic',e.diag||''],['Observations',e.obs||''],['Compte rendu',e.cr||'']]});
+    body:[['Patient',e.nom||''],['Date',frDate(e.date)],['Sexe / âge',[e.sexe==='H'?'Homme':e.sexe==='F'?'Femme':'',e.age?e.age+' ans':'',e.ddn?(e.ddnEst?'né(e) vers ':'né(e) le ')+(e.ddnEst?e.ddn.slice(0,4):frDate(e.ddn)):''].filter(Boolean).join(', ')],['Provenance',[e.prov,e.service].filter(Boolean).join(' – ')],['Prise en charge',[e.pec,payLabel(e)].filter(Boolean).join(' – ')],['Indication / diagnostic',e.diag||''],['Observations',e.obs||''],['Compte rendu',e.cr||'']]});
   let y=doc.lastAutoTable.finalY+6;const W=doc.internal.pageSize.getWidth()-28,H=doc.internal.pageSize.getHeight();
   const others=[];
   for(const p of e.pieces||[]){
@@ -502,25 +507,26 @@ function rdvForm(id,preset){
   const r=S.rdvs.find(x=>x.id===id)||{id:uid(),date:V.view==='rendez-vous'?V.rdvDay:today(),heure:'08:30',duree:'30',statut:'prevu',acte:'EEG',...(preset||{})};
   openDlg(`<form id="fR"><h2>${id?'Rendez-vous':'Nouveau rendez-vous'}</h2><div class="grid" style="margin-top:14px">
   <label>Prénom et nom *<input name="nom" required value="${esc(r.nom||'')}"></label><label>Téléphone<input name="tel" type="tel" value="${esc(r.tel||'')}"></label>
-  <label>Date *<input name="date" type="date" required value="${esc(r.date)}"></label><label>Heure<input name="heure" type="time" step="900" value="${esc(r.heure||'')}"></label><label>Durée<select name="duree">${opt([['15','15 min'],['30','30 min'],['45','45 min'],['60','1 h'],['90','1 h 30'],['120','2 h'],['180','3 h']],r.duree||'30')}</select></label>
+  ${idFields(r)}
+  <label>Date du RDV *<input name="date" type="date" required value="${esc(r.date)}"></label><label>Heure<input name="heure" type="time" step="900" value="${esc(r.heure||'')}"></label><label>Durée<select name="duree">${opt([['15','15 min'],['30','30 min'],['45','45 min'],['60','1 h'],['90','1 h 30'],['120','2 h'],['180','3 h']],r.duree||'30')}</select></label>
   <label>Acte<select name="acte">${opt(ACTES,r.acte,'—')}</select></label><label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],r.prov,'—')}</select></label>
   <label>Prise en charge<select name="pec">${opt(PEC,r.pec,'—')}</select></label><label>Statut<select name="statut">${opt(Object.entries(STATUTS).map(([k,[l]])=>[k,l]),r.statut)}</select></label></div>
   <div class="grid pecF" style="margin-top:12px">${pecFields(r)}</div>
   <label style="margin-top:12px">Motif / service demandeur<textarea name="motif">${esc(r.motif||'')}</textarea></label></form>
   <div class="foot"><button class="btn p" form="fR">Enregistrer</button><button class="btn" type="button" id="xR">Fermer</button>${id&&(r.statut||'prevu')==='prevu'?'<button class="btn" type="button" id="aR">Arrivé · saisir l’examen</button>':''}<span class="sp"></span>${id?'<button class="btn d" id="dR">Supprimer</button>':''}</div>`);
   if($('#aR'))$('#aR').onclick=()=>{dlg.close();examForm(null,r)};
-  $('#xR').onclick=()=>dlg.close();bindPec($('#fR'),{...r});
+  $('#xR').onclick=()=>dlg.close();bindPec($('#fR'),{...r});bindAge($('#fR'));
   $('#fR').onsubmit=async ev=>{ev.preventDefault();const o=cleanPay({...r,...Object.fromEntries(new FormData(ev.target))});o.nom=o.nom.trim();dlg.close();await put('rdvs',o);toast('Rendez-vous enregistré')};
   if(id)$('#dR').onclick=()=>askConfirm('Supprimer ce rendez-vous ?',()=>del('rdvs',id));
 }
 function examForm(id,fromRdv){
   const base=S.exams.find(x=>x.id===id);
   const e=base?{...base,pieces:[...(base.pieces||[])]}:{id:uid(),date:today(),created:new Date().toISOString(),pieces:[],acte:'EEG'};
-  if(fromRdv)Object.assign(e,{nom:fromRdv.nom,acte:fromRdv.acte,prov:fromRdv.prov,pec:fromRdv.pec,montant:fromRdv.montant,partEmp:fromRdv.partEmp,partPat:fromRdv.partPat,date:fromRdv.date,rdv:fromRdv.id,service:fromRdv.motif||''});
+  if(fromRdv)Object.assign(e,{sexe:fromRdv.sexe,age:fromRdv.ddn&&!fromRdv.ddnEst?String(ageFrom(fromRdv.ddn)):fromRdv.age,ddn:fromRdv.ddn,ddnEst:fromRdv.ddnEst,nom:fromRdv.nom,acte:fromRdv.acte,prov:fromRdv.prov,pec:fromRdv.pec,montant:fromRdv.montant,partEmp:fromRdv.partEmp,partPat:fromRdv.partPat,date:fromRdv.date,rdv:fromRdv.id,service:fromRdv.motif||''});
   const pj=()=>e.pieces.map((p,i)=>{const u=safeUrl(p.url);return `<div class="it"><a class="th" href="#" data-view="${i}">${isImg(p)&&u?`<img src="${esc(u)}" alt="">`:'PDF'}</a><button type="button" data-rm="${i}" aria-label="Retirer">×</button><small>${esc(p.name)}</small></div>`}).join('');
   openDlg(`<form id="fE"><h2>${base?'Examen n° '+(numbered(),base._n)+' – '+esc(base.nom):'Nouvel examen'}</h2><div class="grid" style="margin-top:14px">
-  <label>Date *<input name="date" type="date" required value="${esc(e.date)}"></label><label>Prénom et nom *<input name="nom" required value="${esc(e.nom||'')}"></label>
-  <label>Sexe<select name="sexe">${opt([['H','Homme'],['F','Femme']],e.sexe,'—')}</select></label><label>Âge<input name="age" inputmode="numeric" value="${esc(e.age||'')}"></label>
+  <label>Date de l’examen *<input name="date" type="date" required value="${esc(e.date)}"></label><label>Prénom et nom *<input name="nom" required value="${esc(e.nom||'')}"></label>
+  ${idFields(e)}
   <label>Provenance<select name="prov">${opt([['Ext','Externe'],['Int','Interne']],e.prov,'—')}</select></label><label>Service demandeur<input name="service" value="${esc(e.service||'')}"></label>
   <label>PAF / Autres<select name="pec">${opt(PEC,e.pec,'—')}</select></label><label>Acte *<select name="acte" required>${opt(ACTES,e.acte)}</select></label></div>
   <div class="grid pecF" style="margin-top:12px">${pecFields(e)}</div>
@@ -538,7 +544,7 @@ function examForm(id,fromRdv){
     if(rm){e.pieces.splice(+rm.dataset.rm,1);refresh()}
     if(vw){ev.preventDefault();viewPiece(e.pieces[+vw.dataset.view])}};
   $('#xE').onclick=()=>dlg.close();
-  bindPec($('#fE'),{...e});
+  bindPec($('#fE'),{...e});bindAge($('#fE'));
   const collect=()=>{const o=cleanPay({...e,...Object.fromEntries(new FormData($('#fE')))});o.nom=(o.nom||'').trim();delete o._n;return o};
   $('#fE').onsubmit=async ev=>{ev.preventDefault();const o=collect();dlg.close();await put('exams',o);
     if(fromRdv){const r=S.rdvs.find(x=>x.id===fromRdv.id);if(r)await put('rdvs',{...r,statut:'honore',exam:o.id})}toast('Examen enregistré')};
@@ -568,7 +574,7 @@ document.addEventListener('click',ev=>{
   else if(a==='xlsx')repXLSX(curRep());
   else if(a==='copy'){navigator.clipboard.writeText(repText(curRep())).then(()=>toast('Rapport copié'),()=>toast('Copie refusée'))}
   else if(a==='regxlsx'){if(!window.XLSX)return toast('Module Excel non chargé');const L=regList().reverse();
-    const ws=XLSX.utils.aoa_to_sheet([['N°','Date','Prénom et nom','Sexe','Âge','Provenance','Service','PAF / Autres','Montant PAF','Part employeur','Part patient','Total payé','Acte','Diagnostic','Observations','Compte rendu','Pièces'],...L.map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.prov||'',e.service||'',e.pec||'',e.pec==='PAF'?num(e.montant):'',e.pec&&e.pec!=='PAF'?num(e.partEmp):'',e.pec&&e.pec!=='PAF'?num(e.partPat):'',e.pec?payTotal(e):'',e.acte||'',e.diag||'',e.obs||'',e.cr||'',(e.pieces||[]).length])]);
+    const ws=XLSX.utils.aoa_to_sheet([['N°','Date','Prénom et nom','Sexe','Âge','Date de naissance','Provenance','Service','PAF / Autres','Montant PAF','Part employeur','Part patient','Total payé','Acte','Diagnostic','Observations','Compte rendu','Pièces'],...L.map(e=>[e._n,frDate(e.date),e.nom,e.sexe||'',e.age||'',e.ddn?frDate(e.ddn)+(e.ddnEst?' (estimée)':''):'',e.prov||'',e.service||'',e.pec||'',e.pec==='PAF'?num(e.montant):'',e.pec&&e.pec!=='PAF'?num(e.partEmp):'',e.pec&&e.pec!=='PAF'?num(e.partPat):'',e.pec?payTotal(e):'',e.acte||'',e.diag||'',e.obs||'',e.cr||'',(e.pieces||[]).length])]);
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Registre');download('Registre_'+V.reg.y+(V.reg.m!==''?'-'+pad(+V.reg.m+1):'')+'.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]))}
 });
 document.addEventListener('input',ev=>{const t=ev.target;if(t.closest('dialog'))return;
